@@ -26,7 +26,7 @@
 - [x] Owner UI and ComfyUI sidebar verified in a real browser.
 - [x] Staging image and video workflows complete and outputs can be downloaded.
 - [x] Audio and mixed-media transport/serialization tests pass.
-- [ ] Staging self-use release installed and rollback recorded.
+- [x] Staging self-use release installed and rollback recorded.
 - [ ] Publisher ID reserved; documentation, screenshots and privacy notes complete.
 - [ ] Public release and Registry publication verified.
 

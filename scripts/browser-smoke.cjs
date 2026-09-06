@@ -10,7 +10,12 @@ const { chromium } = require('playwright');
   console.log(JSON.stringify({ body: (await page.locator('body').innerText()).slice(0,3500), controls: await page.locator('[title],[aria-label]').evaluateAll(nodes => nodes.map(n => ({ tag:n.tagName, title:n.title, aria:n.getAttribute('aria-label') }))), errors }));
   await page.screenshot({ path: 'artifacts/sidebar-before.png' });
   await page.getByRole('button', { name: 'ComfyRemote', exact: true }).click({ timeout: 8000 });
+  await page.locator('.cr-status').filter({ hasText: '已连接' }).waitFor({ timeout: 65000 });
   await page.screenshot({ path: 'artifacts/sidebar-desktop.png' });
+  await page.setViewportSize({ width: 430, height: 932 });
+  await page.screenshot({ path: 'artifacts/sidebar-mobile.png' });
+  if (await page.locator('.cr-connector').evaluate(node => node.scrollWidth > node.clientWidth)) throw new Error('Sidebar overflow');
+  if (errors.length) throw new Error(errors.join('; '));
   console.log(JSON.stringify({ text: await page.locator('.cr-connector').innerText(), errors }));
   } finally { await browser.close(); }
 })().catch(error => { console.error(error.message); process.exitCode = 1; });
