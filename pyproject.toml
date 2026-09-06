@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "comfyremote-connector"
+version = "0.1.0"
+description = "Pair ComfyUI with ComfyRemote and send workflows for review"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.12"
+dependencies = ["aiohttp>=3.11,<4"]
+
+[project.urls]
+Repository = "https://github.com/BryanLWB/ComfyUI-ComfyRemote"
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<9", "pytest-asyncio>=1,<2", "ruff>=0.12,<1"]
+
+[tool.setuptools.packages.find]
+include = ["comfyremote_connector*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100

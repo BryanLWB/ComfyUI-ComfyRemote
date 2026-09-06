@@ -1,0 +1,6 @@
+tests/
+docs/
+scripts/
+.github/
+artifacts/
+runtime/
