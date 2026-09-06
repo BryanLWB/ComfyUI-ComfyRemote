@@ -1,0 +1,17 @@
+.cr-connector { box-sizing: border-box; padding: 20px 16px; font: 14px/1.5 system-ui, sans-serif; color: var(--input-text, #eee); letter-spacing: 0; }
+.cr-connector * { box-sizing: border-box; }
+.cr-connector h2 { font-size: 20px; font-weight: 600; margin: 0 0 12px; }
+.cr-connector [hidden] { display: none !important; }
+.cr-status { margin: 0 0 22px; padding-bottom: 14px; border-bottom: 1px solid var(--border-color, #555); color: #b6b6b6; }
+.cr-status[data-online="true"] { color: #71cfaa; }
+.cr-form { display: grid; gap: 18px; }
+.cr-form label { display: grid; gap: 7px; font-size: 13px; }
+.cr-form input { width: 100%; min-width: 0; height: 38px; padding: 8px 10px; border-radius: 4px; background: var(--comfy-input-bg, #292929); color: inherit; border: 1px solid var(--border-color, #666); font: inherit; }
+.cr-connector button { min-height: 38px; padding: 8px 12px; border: 1px solid var(--border-color, #666); border-radius: 4px; font: inherit; cursor: pointer; white-space: normal; overflow-wrap: anywhere; }
+.cr-primary { background: #247b67; color: #fff; }
+.cr-connector button:disabled { opacity: .5; cursor: default; }
+.cr-error { color: #f5a5a5; overflow-wrap: anywhere; margin: 0 0 14px; }
+.cr-review { color: #85cbbd; overflow-wrap: anywhere; }
+.cr-service { color: #b6b6b6; font-size: 12px; overflow-wrap: anywhere; margin: -10px 0 20px; }
+.cr-disconnect { background: transparent; color: inherit; margin-top: 30px; }
+.cr-connector :focus-visible { outline: 2px solid #85cbbd; outline-offset: 3px; }

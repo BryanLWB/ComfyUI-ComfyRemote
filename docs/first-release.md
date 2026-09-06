@@ -18,14 +18,14 @@
 
 - [x] Scope and license confirmed.
 - [x] Isolated ComfyRemote feature worktree.
-- [ ] Private plugin repository created and initial source committed.
-- [ ] Isolated ComfyUI test environment starts with required sample nodes.
-- [ ] Pairing, revocation, reconnect and strict command boundaries tested.
-- [ ] Duplicate prompt submission is prevented after lost responses or restart.
-- [ ] Workflow import creates idempotent drafts and never publishes automatically.
-- [ ] Owner UI and ComfyUI sidebar verified in a real browser.
-- [ ] Staging image and video workflows complete and outputs can be downloaded.
-- [ ] Audio and mixed-media transport/serialization tests pass.
+- [x] Private plugin repository created and initial source committed.
+- [x] Isolated ComfyUI test environment starts with required sample nodes.
+- [x] Pairing, revocation, reconnect and strict command boundaries tested.
+- [x] Duplicate prompt submission is prevented after lost responses or restart.
+- [x] Workflow import creates idempotent drafts and never publishes automatically.
+- [x] Owner UI and ComfyUI sidebar verified in a real browser.
+- [x] Staging image and video workflows complete and outputs can be downloaded.
+- [x] Audio and mixed-media transport/serialization tests pass.
 - [ ] Staging self-use release installed and rollback recorded.
 - [ ] Publisher ID reserved; documentation, screenshots and privacy notes complete.
 - [ ] Public release and Registry publication verified.
@@ -43,5 +43,6 @@ The server hands out commands at most once; the device journals command receipts
 before local execution. Uncertain prompt submissions are not automatically retried.
 Media is transferred in bounded chunks so large videos do not depend on a single
 large Cloudflare request. Idle polls and command state use local SQLite, not D1.
-The command surface allows only the ComfyUI operations required to run jobs; it
-cannot execute shell commands, install nodes/models or read arbitrary paths.
+The command surface exposes only the ComfyUI operations required to run jobs.
+It provides no shell, node installer or general file-read endpoint. Installed
+custom nodes retain their own process permissions; this is not a node sandbox.
