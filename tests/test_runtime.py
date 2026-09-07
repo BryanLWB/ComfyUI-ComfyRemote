@@ -10,6 +10,7 @@ from comfyremote_connector.runtime import Runtime
 async def test_existing_pairing_can_fetch_identity_without_exposing_token(
     tmp_path, monkeypatch, status
 ):
+    monkeypatch.setattr("comfyremote_connector.runtime.time.monotonic", lambda: 5.0)
     runtime = Runtime(tmp_path, "http://127.0.0.1:8189")
     runtime.pairing = {"origin": "https://example.net", "token": "device-secret"}
     runtime.state.save_pairing(runtime.pairing)

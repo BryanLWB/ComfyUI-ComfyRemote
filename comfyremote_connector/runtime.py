@@ -38,7 +38,7 @@ class Runtime:
         self.mutation = asyncio.Lock()
         self.progress = {}
         self.progress_tasks = {}
-        self.identity_checked_at = 0.0
+        self.identity_checked_at = float("-inf")
 
     async def start(self):
         self.session = aiohttp.ClientSession(
@@ -97,7 +97,7 @@ class Runtime:
             value["origin"] = origin
             self.state.save_pairing(value)
             self.pairing = value
-            self.identity_checked_at = 0.0
+            self.identity_checked_at = float("-inf")
             self.error = ""
 
     async def refresh_identity(self):
