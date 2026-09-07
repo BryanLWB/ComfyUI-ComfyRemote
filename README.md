@@ -1,9 +1,9 @@
 # ComfyRemote Connector
 
 ComfyUI extension for pairing a machine with a ComfyRemote server, sending the
-current workflow for field review, and executing remote jobs while ComfyUI runs.
+current or selected saved workflow for field review, and executing remote jobs while ComfyUI runs.
 
-Version 0.1.0 is a private self-use preview, verified against a staging ComfyRemote
+Version 0.1.1 is a private self-use preview, verified against a staging ComfyRemote
 instance. Public Registry publication is pending publisher identity. See
 [the release checklist](docs/first-release.md) and [acceptance results](docs/acceptance.md).
 
@@ -25,6 +25,23 @@ these local extension controls is deliberately restricted to loopback.
 
 For Access-protected services, the server administrator must configure a separate
 device API ingress as described in [server setup](docs/server-setup.md).
+
+## Choose and Send
+
+The sidebar shows the current canvas and saved JSON workflows belonging to the
+current ComfyUI user, including subfolders. Search or refresh the list, select one
+workflow, optionally edit its name, then send it for review in ComfyRemote.
+Selecting a saved file sends its latest disk contents without opening it on the
+canvas. Select the current canvas to include unsaved changes instead.
+
+Saved files are converted in an independent graph using ComfyUI's native frontend
+API. Missing nodes and unsupported background conversion stop the send. Native
+subgraph definitions currently require opening the workflow and sending the current
+canvas. Failed conversion never substitutes a different workflow or starts generation.
+
+The paired owner's email comes from the server. Existing pairings update
+automatically; older servers show an account-unavailable placeholder. After upgrading,
+restart ComfyUI and refresh its browser page; re-pairing is not required.
 
 ## Data
 

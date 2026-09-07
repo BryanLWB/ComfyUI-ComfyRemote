@@ -5,11 +5,16 @@ for a device token. The Python extension stores the token with Windows DPAPI und
 ComfyUI's user directory, never in browser storage. Copying this state to another
 Windows account will not transfer a working credential.
 
-Send transfers the current executable graph, node titles and relevant node
+The saved-workflow list and unselected files remain local. Send transfers only the
+selected file's or current canvas's executable graph, node titles and relevant node
 definitions. This includes prompts, defaults, referenced model names and filenames
 already present in the graph. It does not upload weights, unrelated workflows or
 the full model inventory. Known credential inputs and code-execution node names
 are rejected, but detection is not exhaustive: inspect private graphs before sending.
+
+The service owner's email is obtained through device authentication and displayed
+locally to identify the paired service. It is not inferred from the browser account.
+The device bearer credential is never included in local browser status responses.
 
 Remote runs transfer their input media and generated output media. Media transfers
 are limited to 512 MiB per body and use 4 MiB chunks. Existing server upload limits

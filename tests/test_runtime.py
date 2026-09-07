@@ -6,6 +6,43 @@ from comfyremote_connector.runtime import Runtime
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("status", [200, 404, 405])
+async def test_existing_pairing_can_fetch_identity_without_exposing_token(
+    tmp_path, monkeypatch, status
+):
+    runtime = Runtime(tmp_path, "http://127.0.0.1:8189")
+    runtime.pairing = {"origin": "https://example.net", "token": "device-secret"}
+    runtime.state.save_pairing(runtime.pairing)
+
+    class Response:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            pass
+
+        def raise_for_status(self):
+            pass
+
+        async def json(self):
+            return {"owner_email": "owner@example.net"}
+
+    Response.status = status
+
+    async def remote(method, path, **kwargs):
+        assert (method, path) == ("GET", "/identity")
+        return Response()
+
+    monkeypatch.setattr(runtime, "remote", remote)
+    await runtime.refresh_identity()
+    assert runtime.pairing["token"] == "device-secret"
+    assert "token" not in runtime.status()
+    expected = "owner@example.net" if status == 200 else None
+    assert runtime.status()["owner_email"] == expected
+    assert runtime.state.load_pairing().get("owner_email") == expected
+
+
+@pytest.mark.asyncio
 async def test_lost_submission_response_is_not_repeated_after_runtime_restart(
     tmp_path, monkeypatch
 ):

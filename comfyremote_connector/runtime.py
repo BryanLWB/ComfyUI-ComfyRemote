@@ -38,6 +38,7 @@ class Runtime:
         self.mutation = asyncio.Lock()
         self.progress = {}
         self.progress_tasks = {}
+        self.identity_checked_at = 0.0
 
     async def start(self):
         self.session = aiohttp.ClientSession(
@@ -61,6 +62,7 @@ class Runtime:
             "online": self.online,
             "error": self.error,
             "service": self.pairing["origin"] if self.pairing else "",
+            "owner_email": self.pairing.get("owner_email") if self.pairing else None,
             "last_import": self.last_import,
         }
 
@@ -95,7 +97,34 @@ class Runtime:
             value["origin"] = origin
             self.state.save_pairing(value)
             self.pairing = value
+            self.identity_checked_at = 0.0
             self.error = ""
+
+    async def refresh_identity(self):
+        pairing = self.pairing
+        if not pairing or time.monotonic() - self.identity_checked_at < 600:
+            return
+        self.identity_checked_at = time.monotonic()
+        try:
+            async with await self.remote(
+                "GET", "/identity", timeout=aiohttp.ClientTimeout(total=10)
+            ) as response:
+                if response.status in {404, 405}:
+                    return
+                response.raise_for_status()
+                value = await response.json()
+            email = value.get("owner_email")
+            if email is not None and (
+                not isinstance(email, str) or len(email) > 320 or "@" not in email
+            ):
+                return
+            async with self.mutation:
+                if self.pairing is pairing and pairing.get("owner_email") != email:
+                    updated = {**pairing, "owner_email": email}
+                    self.state.save_pairing(updated)
+                    self.pairing = updated
+        except (aiohttp.ClientError, OSError, ValueError, TimeoutError):
+            self.identity_checked_at = time.monotonic() - 570
 
     async def unpair(self):
         async with self.mutation:
@@ -148,6 +177,7 @@ class Runtime:
                 await asyncio.sleep(1)
                 continue
             try:
+                await self.refresh_identity()
                 pairing = self.pairing
                 async with await self.remote("GET", "/poll") as response:
                     if self.pairing is not pairing:

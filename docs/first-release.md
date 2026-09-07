@@ -7,7 +7,7 @@
 - Configurable service origin; Windows first; ComfyUI owns connector lifecycle.
 - Server retains accounts, review, persistent job queue and asset storage.
 - Device requires no separate Agent, public ComfyUI port or Cloudflare credentials.
-- Small sidebar: connection, pairing, workflow name, send, last result/error.
+- Small sidebar: owner identity, connection, pairing, saved-workflow selection, name, send and error.
 - API workflow conversion uses ComfyUI's frontend API. Missing nodes block sending.
 - Draft field candidates cover scalar controls, image/video/audio and multiple media.
 - Owner reviews, validates, tests and publishes using ComfyRemote.
