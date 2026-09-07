@@ -3,7 +3,7 @@
 ComfyUI extension for pairing a machine with a ComfyRemote server, sending the
 current or selected saved workflow for field review, and executing remote jobs while ComfyUI runs.
 
-Version 0.1.1 is a private self-use preview, verified against a staging ComfyRemote
+Version 0.1.2 is a private self-use preview, verified against a staging ComfyRemote
 instance. Public Registry publication is pending publisher identity. See
 [the release checklist](docs/first-release.md) and [acceptance results](docs/acceptance.md).
 
@@ -33,6 +33,13 @@ current ComfyUI user, including subfolders. Search or refresh the list, select o
 workflow, optionally edit its name, then send it for review in ComfyRemote.
 Selecting a saved file sends its latest disk contents without opening it on the
 canvas. Select the current canvas to include unsaved changes instead.
+
+The list shows each filename once, with relative paths in tooltips and accessible
+names. It displays at most ten rows and scrolls internally. Sending reports progress,
+success, duplicates or errors in the sidebar. Keep the owner's ComfyRemote management
+page visible to receive a notification within five seconds, with a configuration link.
+Duplicate execution graphs reuse the existing draft and preserve its configuration.
+Registry publication is not required for connecting or sending.
 
 Saved files are converted in an independent graph using ComfyUI's native frontend
 API. Missing nodes and unsupported background conversion stop the send. Native

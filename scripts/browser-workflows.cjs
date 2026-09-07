@@ -18,7 +18,7 @@ const fs = require('node:fs/promises');
         tabs: [...document.querySelectorAll('[role="tab"]')].map(n=>n.textContent),
         undo: JSON.stringify(app.extensionManager?.workflow?.activeWorkflow?.changeTracker?.undoQueue)};
     });
-    const files = await page.locator('.cr-workflow input').evaluateAll(nodes => nodes.map(n=>n.value).filter(Boolean));
+    const files = await page.locator('.cr-workflow input').evaluateAll(nodes => nodes.map(n=>n.value).filter(value => /^(Krea2-Turbo|Minimax_h3)/.test(value)));
     assert(files.length >= 2);
     for (const file of files) {
       await page.locator('.cr-workflow input').filter({visible:true}).evaluateAll((nodes,path)=>{nodes.find(n=>n.value===path).click();}, file);
@@ -57,7 +57,7 @@ const fs = require('node:fs/promises');
     await page.route('**/userdata/*', route => route.fulfill({json:fixture}));
     await page.getByRole('button',{name:'刷新工作流列表',exact:true}).click();
     await page.getByRole('searchbox',{name:'搜索工作流',exact:true}).fill('测试B');
-    await page.getByRole('radio',{name:/同名 测试B/}).check();
+    await page.getByRole('radio',{name:'测试B/同名.json',exact:true}).check();
     fixture.nodes[0].widgets_values[0] = 384;
     let payload;
     await page.route('**/comfyremote/workflow', async route => {payload=route.request().postDataJSON();await route.fulfill({json:{review_path:'/#/manage/workflow/test/1',candidate_count:1}});});

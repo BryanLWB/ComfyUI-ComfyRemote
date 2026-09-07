@@ -13,6 +13,12 @@ const assert = require('node:assert/strict');
       const w = await (await page.request.get(admin+'/workflows/'+row.id)).json();
       originalFields[row.id] = w.versions.map(v=>({version:v.version,fields:v.fields}));
     }
+    const editor = await browser.newPage({viewport:{width:1440,height:1000}});
+    const krea = originals.find(w=>w.name.includes('Krea'));
+    await editor.goto('http://127.0.0.1:33743/#/workflow/'+krea.id+'/1',{waitUntil:'networkidle'});
+    assert.equal(await editor.locator('.connector-received').count(),0);
+    const editedLabel = editor.locator('.binding-card .form-field').filter({has:editor.getByText('手机端标签',{exact:true})}).locator('input').first();
+    await editedLabel.fill('Unsaved notification acceptance');
     await page.goto('http://127.0.0.1:8189',{waitUntil:'networkidle'});
     await page.getByRole('button',{name:'ComfyRemote',exact:true}).click();
     await page.locator('.cr-status').filter({hasText:'已连接'}).waitFor({timeout:65000});
@@ -36,7 +42,8 @@ const assert = require('node:assert/strict');
     const state = JSON.parse(before);
     assert(state.undo.length > 0);
     assert(state.modified);
-    const paths=await page.locator('.cr-workflow input').evaluateAll(nodes=>nodes.map(n=>n.value).filter(Boolean));
+    const paths=await page.locator('.cr-workflow input').evaluateAll(nodes=>nodes.map(n=>n.value).filter(value=>/^(Krea2-Turbo|Minimax_h3)/.test(value)));
+    assert.equal(paths.length,2);
     for (const path of paths) {
       const expected=originals.find(w=>path.startsWith('Krea') ? w.name.includes('Krea') : w.name.includes('Minimax'));
       assert(expected);
@@ -53,11 +60,17 @@ const assert = require('node:assert/strict');
       }
     }
     assert.equal((await (await page.request.get(admin+'/workflows')).json()).length,rows.length);
+    await editor.waitForFunction(()=>document.querySelectorAll('.connector-received').length===4);
+    assert.equal(await editedLabel.inputValue(),'Unsaved notification acceptance');
+    assert.equal(await editor.locator('.connector-received a[target="_blank"]').count(),4);
+    await editor.waitForResponse(r=>r.url().includes('/connector/imports'));
+    assert.equal(await editor.locator('.connector-received').count(),4);
+    await editor.screenshot({path:'artifacts/012-staging-notifications.png'});
     for (const row of originals) {
       const w=await (await page.request.get(admin+'/workflows/'+row.id)).json();
       assert.deepEqual(w.versions.map(v=>({version:v.version,fields:v.fields})),originalFields[row.id]);
     }
-    await page.screenshot({path:'artifacts/011-staging-sidebar.png'});
-    console.log(JSON.stringify({ownerEmail:true,existingFieldsPreserved:true,noExtraDrafts:true}));
+    await page.screenshot({path:'artifacts/012-staging-sidebar.png'});
+    console.log(JSON.stringify({ownerEmail:true,existingFieldsPreserved:true,noExtraDrafts:true,receiveNotifications:4,notificationDedupe:true,dirtyEditorPreserved:true}));
   } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

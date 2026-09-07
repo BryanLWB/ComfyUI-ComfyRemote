@@ -61,12 +61,14 @@ function mount(container) {
   const name = element("input", { required: true, maxLength: 200 });
   const send = element("button", { type: "submit", className: "cr-primary" }, "发送当前工作流");
   const result = element("a", { className: "cr-review", target: "_blank", rel: "noopener", hidden: true });
+  const feedback = element("p", { className: "cr-feedback", role: "status", hidden: true });
   workflowForm.append(chooser);
   field(workflowForm, "工作流名称", name);
-  workflowForm.append(send, result);
-  const disconnect = element("button", { type: "button", className: "cr-icon cr-disconnect", hidden: true, title: "解除配对" });
+  workflowForm.append(send, feedback, result);
+  const disconnect = element("button", { type: "button", className: "cr-disconnect", hidden: true, title: "解除配对" });
   disconnect.setAttribute("aria-label", "解除配对");
   disconnect.append(element("i", { className: "pi pi-sign-out" }));
+  disconnect.append(element("span", {}, "解除配对"));
   header.append(heading, status, disconnect);
   root.append(header, account, connectedService, error, pairForm, workflowForm);
   container.replaceChildren(root);
@@ -83,16 +85,17 @@ function mount(container) {
     list.replaceChildren();
     const matching = paths.filter(path => path.toLocaleLowerCase().includes(search.value.toLocaleLowerCase()));
     for (const path of ["", ...matching, ...(selectedPath && !paths.includes(selectedPath) ? [selectedPath] : [])]) {
-      const row = element("label", { className: "cr-workflow" });
+      const row = element("label", { className: "cr-workflow", title: path || "当前画布（包含未保存修改）" });
       const radio = element("input", { type: "radio", name: "comfyremote-workflow", value: path, checked: selectedPath === path, disabled: busy });
+      radio.setAttribute("aria-label", path || "当前画布（包含未保存修改）");
       const text = element("span");
-      text.append(element("strong", {}, path ? workflowName(path) : "当前画布"));
-      text.append(element("small", {}, path || "包含未保存修改"));
+      text.append(element("strong", {}, path ? path.split('/').pop() : "当前画布"));
       radio.addEventListener("change", () => {
         selectedPath = path;
         name.value = path ? workflowName(path) : currentName();
         send.textContent = path ? "发送所选工作流" : "发送当前工作流";
         result.hidden = true;
+        feedback.hidden = true;
         send.disabled = cannotSend();
       });
       row.append(radio, text);
@@ -143,7 +146,7 @@ function mount(container) {
     for (const input of workflowForm.querySelectorAll("input")) input.disabled = true;
     for (const button of root.querySelectorAll("button")) button.disabled = true;
     error.hidden = true;
-    try { await callback(); } catch (cause) { error.textContent = cause.message; error.hidden = false; }
+    try { await callback(); } catch (cause) { feedback.hidden = true; error.textContent = cause.message; error.hidden = false; }
     finally {
       busy = false;
       for (const input of workflowForm.querySelectorAll("input")) input.disabled = false;
@@ -160,6 +163,8 @@ function mount(container) {
     void action(async () => {
       if (selectedPath && !paths.includes(selectedPath)) throw new Error("所选文件已不存在，请重新选择。");
       result.hidden = true;
+      feedback.hidden = false;
+      feedback.textContent = "正在发送工作流…";
       const prompt = await workflowPrompt(selectedPath);
       if (!prompt || !Object.keys(prompt).length) throw new Error("所选工作流没有可执行节点。");
       const value = await request("workflow", { name: name.value.trim(), prompt });
@@ -168,6 +173,7 @@ function mount(container) {
       result.href = review.href;
       result.textContent = value.duplicate ? "查看已有工作流" : `审核字段（${value.candidate_count}）`;
       result.hidden = false;
+      feedback.textContent = value.duplicate ? "工作流已存在，已定位原草稿。" : "发送成功，工作流已导入为草稿。";
     });
   });
   disconnect.addEventListener("click", () => void action(async () => {
