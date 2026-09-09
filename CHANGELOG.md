@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0 - Public release candidate
+
+- One Windows plugin for self-hosted protocol 1 and hosted-ws-v2 services.
+- Hosted reconnect, durable command receipts and resource upload recovery.
+- Registry metadata and bounded release archive; existing credentials preserved.
+- Five-digit, fifteen-minute pairing on current services; legacy codes still accepted.
+
 ## 0.1.2 - Private Preview
 
 - Add an explicit unpair label and a compact, ten-row saved workflow list.

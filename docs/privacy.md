@@ -1,6 +1,6 @@
 # Privacy and Limits
 
-Pairing contacts the selected service and exchanges a single-use, five-minute code
+Pairing contacts the selected service and exchanges a single-use, fifteen-minute code
 for a device token. The Python extension stores the token with Windows DPAPI under
 ComfyUI's user directory, never in browser storage. Copying this state to another
 Windows account will not transfer a working credential.
