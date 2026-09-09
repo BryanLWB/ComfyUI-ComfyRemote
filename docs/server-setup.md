@@ -1,10 +1,10 @@
 # Server Setup
 
-Install a ComfyRemote Bridge and Worker containing connector protocol 1. The
-current preview companion implementation is commit `67ccfb6` in the local
-ComfyRemote integration branch. It depends on the preceding remote management work
-and is not yet part of the canonical GitHub main release. Installing only this
-extension against an older server will not provide pairing endpoints.
+Use a ComfyRemote Bridge and Worker that both implement connector protocol 1,
+including the identity and import-event routes described below. The unified
+plugin also negotiates hosted-ws-v2 with a compatible hosted service. Pairing
+does not change the self-hosted Agent's execution transport. Confirm the service
+version before upgrading; installing a plugin alone does not add server endpoints.
 
 For Cloudflare deployments, preserve website login and protected Bridge ingress.
 Create one separate self-hosted Access application for the service origin's

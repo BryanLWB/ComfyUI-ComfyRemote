@@ -68,6 +68,8 @@ class State:
         with self.db() as db:
             for table in ("prompts", "outputs", "classes", "receipts", "definitions"):
                 db.execute(f"DELETE FROM {table}")
+            if db.execute("SELECT 1 FROM sqlite_master WHERE name='hosted_jobs'").fetchone():
+                db.execute("DELETE FROM hosted_jobs")
 
     def add_classes(self, names) -> None:
         with self.db() as db:
