@@ -14,6 +14,7 @@ from urllib.parse import quote
 
 import aiohttp
 
+from .hosted import Hosted
 from .protocol import CHUNK_BYTES, MAX_BODY_BYTES, service_origin, validate_command
 from .state import State
 from .workflow import minimal_info, validate_workflow
@@ -39,6 +40,7 @@ class Runtime:
         self.progress = {}
         self.progress_tasks = {}
         self.identity_checked_at = float("-inf")
+        self.hosted = Hosted(self)
 
     async def start(self):
         self.session = aiohttp.ClientSession(
@@ -53,6 +55,7 @@ class Runtime:
         for task in self.progress_tasks.values():
             task.cancel()
         await asyncio.gather(*self.progress_tasks.values(), return_exceptions=True)
+        await self.hosted.close()
         if self.session:
             await self.session.close()
 
@@ -84,7 +87,12 @@ class Runtime:
             origin = service_origin(origin)
             async with self.session.post(
                 origin + "/api/connector/pair",
-                json={"code": code.strip().upper(), "name": name[:80], "protocol": 1},
+                json={
+                    "code": code.strip().upper(),
+                    "name": name[:80],
+                    "protocol": 1,
+                    "capabilities": ["hosted-jobs-v2", "multipart-v1"],
+                },
                 allow_redirects=False,
             ) as response:
                 if response.status != 200:
@@ -166,7 +174,11 @@ class Runtime:
         async with await self.remote("POST", "/workflows", json=payload) as response:
             value = await response.json()
             if response.status not in {200, 201}:
-                raise ValueError(value.get("detail", {}).get("message", "Workflow import failed"))
+                raise ValueError(
+                    value.get("error", value.get("detail", {})).get(
+                        "message", "Workflow import failed"
+                    )
+                )
         self.last_import = value
         return value
 
@@ -179,6 +191,10 @@ class Runtime:
             try:
                 await self.refresh_identity()
                 pairing = self.pairing
+                if pairing and pairing.get("transport") == "hosted-ws-v2":
+                    await self.hosted.connect()
+                    await asyncio.sleep(1)
+                    continue
                 async with await self.remote("GET", "/poll") as response:
                     if self.pairing is not pairing:
                         continue

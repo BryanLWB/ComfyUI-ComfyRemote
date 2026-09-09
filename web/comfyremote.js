@@ -34,7 +34,7 @@ function mount(container) {
   const connectedService = element("p", { className: "cr-service", hidden: true });
   const error = element("p", { className: "cr-error", role: "alert", hidden: true });
   const pairForm = element("form", { className: "cr-form" });
-  const service = element("input", { type: "url", required: true, placeholder: "https://", autoComplete: "url" });
+  const service = element("input", { type: "url", required: true, placeholder: "https://comfy-app.dominohub.xyz", autoComplete: "url" });
   const code = element("input", { required: true, maxLength: 20, autoComplete: "off", spellcheck: false });
   const pairButton = element("button", { type: "submit", className: "cr-primary" }, "连接");
   function field(parent, title, input) {

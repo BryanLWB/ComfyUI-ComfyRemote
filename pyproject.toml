@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "comfyremote-connector"
-version = "0.1.2"
+version = "0.2.0-beta.3"
 description = "Pair ComfyUI with ComfyRemote and send workflows for review"
 readme = "README.md"
 license = { file = "LICENSE" }
