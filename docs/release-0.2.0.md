@@ -6,9 +6,9 @@ be checked before publication). Repository license: MIT. Windows, Python 3.12/3.
 ## Release gates
 
 - [x] Publisher confirmed by the owner.
-- [ ] Python and browser compatibility validation for this release.
-- [ ] Audit all reachable Git history and old release attachments before public visibility.
-- [ ] End-to-end isolated self-hosted installation and generation.
+- [x] Python and browser compatibility validation for this release.
+- [x] Clean public history checked; original PRs and preview attachments remain in a separate private archive.
+- [x] Isolated packaged self-hosted service and real image/video/audio generation. Public Tunnel and physical-phone acceptance remain pending.
 - [ ] Public GitHub tag/release and Registry upload.
 - [ ] Registry indexed and ComfyUI Manager search/install verified.
 
@@ -36,3 +36,9 @@ Manager installation still require their final release acceptance.
 Self-hosted single-card UI passed desktop/390px/320px checks; pairing issue and
 cancellation were exercised in a browser. GitHub Python 3.12 and 3.13 checks passed.
 Real phone and clean Windows acceptance remain pending. Registry/Manager is not yet published.
+
+## Public archive boundary
+
+The public repository contains sanitized main history only. Earlier private preview
+PRs and release attachments were not migrated. Registry configuration validates with
+comfy-cli 1.20.0; the archive excludes test tools and operational documents.
