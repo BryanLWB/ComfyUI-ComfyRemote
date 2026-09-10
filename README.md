@@ -3,9 +3,11 @@
 ComfyUI extension for pairing a machine with a ComfyRemote server, sending the
 current or selected saved workflow for field review, and executing remote jobs while ComfyUI runs.
 
-Version 0.1.2 is a private self-use preview, verified against a staging ComfyRemote
-instance. Public Registry publication is pending publisher identity. See
-[the release checklist](docs/first-release.md) and [acceptance results](docs/acceptance.md).
+Version 0.2.0 is the first public release candidate. Registry publication and
+Manager availability are recorded in [the release checklist](docs/release-0.2.0.md).
+The plugin supports both self-hosted ComfyRemote and the hosted invitation beta.
+A public plugin does not open hosted registration; the self-hosted server remains
+in private prerelease. Installing the plugin alone does not create a server.
 
 The extension is independently implemented under MIT. ComfyRemote is a separate
 Apache-2.0 server dependency; its account, review, job and storage services remain
@@ -16,10 +18,11 @@ on the server. No separate desktop Agent is required on the ComfyUI machine.
 Clone this repository into your test ComfyUI installation's `custom_nodes` folder,
 install `requirements.txt` using that installation's Python, then restart ComfyUI.
 Use the ComfyRemote sidebar to enter your server address and a one-time pairing code.
-Generate pairing codes in ComfyRemote using the owner account.
+Generate a five-digit code in ComfyRemote using the owner account; it expires after
+15 minutes and works once. Older services may still issue longer codes.
 
 Requires Windows, Python 3.12 or 3.13, and a ComfyRemote server implementing
-connector protocol 1. Tested with ComfyUI 0.34.5 and frontend 1.49.6. Use the local
+connector protocol 1 or hosted-ws-v2. Tested with ComfyUI 0.34.5 and frontend 1.49.6. Use the local
 ComfyUI browser on the device for pairing and sending; remote browser access to
 these local extension controls is deliberately restricted to loopback.
 

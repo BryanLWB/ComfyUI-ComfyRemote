@@ -1,16 +1,19 @@
 # Server Setup
 
-Use a ComfyRemote Bridge and Worker that both implement connector protocol 1,
-including the identity and import-event routes described below. The unified
+Use a ComfyRemote service implementing connector protocol 1,
+including the identity and import-event routes described below. A local-storage
+installation uses SQLite, local media and Cloudflare Tunnel; Worker, D1 and R2
+are not required. If optional cloud synchronization is enabled, its Worker must
+also implement the connector relay. The unified
 plugin also negotiates hosted-ws-v2 with a compatible hosted service. Pairing
 does not change the self-hosted Agent's execution transport. Confirm the service
 version before upgrading; installing a plugin alone does not add server endpoints.
 
 For Cloudflare deployments, preserve website login and protected Bridge ingress.
-Create one separate self-hosted Access application for the service origin's
+The current self-hosted installation wizard creates one separate Access application for the service origin's
 `/api/connector/*` path with a Bypass policy. This path uses device bearer
 authentication instead of browser login. Never bypass the entire site or Bridge.
-The Worker forwards only allowlisted connector routes with its Bridge service
+When enabled, the Worker forwards only allowlisted connector routes with its Bridge service
 credential; no Cloudflare token is installed on the ComfyUI machine.
 
 In ComfyRemote owner settings, generate a pairing code. In ComfyUI, open the
@@ -33,6 +36,8 @@ flag. Management polling pauses when hidden and never reloads an active editor.
 New imports select supported Save outputs and VHS outputs with saving enabled.
 Existing drafts, duplicates and published versions retain their chosen outputs.
 
-Keep the previous Bridge/Worker build and a SQLite backup before upgrading. To
-roll back, drain jobs, revoke the device, stop its test ComfyUI, restore the previous
-Bridge and Worker, and remove only the connector-specific Access application.
+Keep previous service/plugin builds and a SQLite backup before upgrading. To
+roll back, drain jobs and restore compatible application files while preserving
+device credentials and data. Restore a database only after checking that doing so
+will not lose new tasks. Do not remove the device Access route while a plugin still
+uses it. Pairing is not an instruction to change the configured execution transport.

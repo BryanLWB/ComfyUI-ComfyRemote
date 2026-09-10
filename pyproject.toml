@@ -4,11 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "comfyremote-connector"
-version = "0.2.0-beta.3"
+version = "0.2.0"
 description = "Pair ComfyUI with ComfyRemote and send workflows for review"
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.12"
+classifiers = ["Operating System :: Microsoft :: Windows"]
 dependencies = ["aiohttp>=3.11,<4"]
 
 [project.urls]
@@ -30,3 +31,8 @@ line-length = 100
 
 [tool.ruff.lint]
 ignore = ["N999"]
+
+[tool.comfy]
+PublisherId = "bryan711"
+DisplayName = "ComfyRemote"
+requires-comfyui = ">=0.34.5"

@@ -1,6 +1,11 @@
-tests/
-docs/
-scripts/
 .github/
+tests/
+scripts/
+package.json
+package-lock.json
+docs/acceptance.md
+docs/release-0.1.2.md
+node_modules/
 artifacts/
-runtime/
+.pytest*/
+.venv/

@@ -7,7 +7,7 @@ from pathlib import Path
 import httpx
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--kind", choices=["image", "video"], default="image")
+parser.add_argument("--kind", choices=["image", "video", "audio"], default="image")
 parser.add_argument("--admin", default="http://127.0.0.1:8892")
 parser.add_argument("--comfy", default="http://127.0.0.1:8189")
 parser.add_argument("--publish", action="store_true")
@@ -29,7 +29,12 @@ def call(method, path, **kwargs):
 graph = {
     "1": {"class_type": "EmptyImage", "inputs": {"width": 256, "height": 256, "batch_size": 8 if args.kind == "video" else 1, "color": 3372963}},
 }
-if args.kind == "video":
+if args.kind == "audio":
+    graph = {
+        "1": {"class_type": "EmptyAudio", "inputs": {"duration": 1.0, "sample_rate": 44100, "channels": 1}},
+        "3": {"class_type": "SaveAudio", "inputs": {"audio": ["1", 0], "filename_prefix": "ComfyRemote/connector-acceptance"}},
+    }
+elif args.kind == "video":
     graph["2"] = {"class_type": "CreateVideo", "inputs": {"images": ["1", 0], "fps": 8.0}}
     graph["3"] = {"class_type": "SaveVideo", "inputs": {"video": ["2", 0], "filename_prefix": "ComfyRemote/connector-acceptance", "format": "mp4", "codec": "h264"}}
 else:

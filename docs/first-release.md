@@ -38,7 +38,7 @@ sync, complete in-plugin field editing and automatic publishing are out of scope
 ## Protocol v1
 
 The connector uses outbound HTTPS. The server authenticates each request with a
-revocable device token. Pairing codes expire after five minutes and are single use.
+revocable device token. Pairing codes expire after fifteen minutes and are single use.
 The server hands out commands at most once; the device journals command receipts
 before local execution. Uncertain prompt submissions are not automatically retried.
 Media is transferred in bounded chunks so large videos do not depend on a single
