@@ -1,7 +1,6 @@
 # ComfyRemote plugin 0.2.0
 
-Publisher: `bryan711`. Registry node ID: `comfyremote-connector` (availability must
-be checked before publication). Repository license: MIT. Windows, Python 3.12/3.13.
+Publisher: `bryan711`. Registry node ID: `comfyremote-connector`. Repository license: MIT. Windows, Python 3.12/3.13.
 
 ## Release gates
 
@@ -9,11 +8,11 @@ be checked before publication). Repository license: MIT. Windows, Python 3.12/3.
 - [x] Python and browser compatibility validation for this release.
 - [x] Clean public history checked; original PRs and preview attachments remain in a separate private archive.
 - [x] Isolated packaged self-hosted service and real image/video/audio generation. Public Tunnel and physical-phone acceptance remain pending.
-- [ ] Public GitHub tag/release and Registry upload.
+- [x] Public GitHub tag/release and Registry upload (2026-09-10).
 - [ ] Registry indexed and ComfyUI Manager search/install verified.
 
-Do not interpret prepared metadata as an available Registry release. If indexing
-is pending, use the fixed-version ZIP attached to the eventual GitHub release.
+Registry upload succeeded; version processing is pending. Until an installable
+version is available, use the fixed-version ZIP attached to the GitHub release.
 Self-hosted ComfyRemote remains private; hosted accounts require an invitation.
 
 A release must match its tag and a reviewed main-branch commit. Never overwrite
@@ -35,10 +34,18 @@ Manager installation still require their final release acceptance.
 
 Self-hosted single-card UI passed desktop/390px/320px checks; pairing issue and
 cancellation were exercised in a browser. GitHub Python 3.12 and 3.13 checks passed.
-Real phone and clean Windows acceptance remain pending. Registry/Manager is not yet published.
+Real phone and clean Windows acceptance remain pending. Registry upload succeeded; Manager installation remains pending.
 
 ## Public archive boundary
 
 The public repository contains sanitized main history only. Earlier private preview
 PRs and release attachments were not migrated. Registry configuration validates with
 comfy-cli 1.20.0; the archive excludes test tools and operational documents.
+
+## Registry upload result
+
+- [Publishing workflow](https://github.com/BryanLWB/ComfyUI-ComfyRemote/actions/runs/34427514013): success.
+- [Registry node](https://registry.comfy.org/nodes/comfyremote-connector): active node owned by bryan711.
+- Version 0.2.0: NodeVersionStatusPending on initial verification; no download URL.
+- Actual Manager search/install is an external publication gate, not yet passed.
+- No version number was overwritten or incremented to bypass platform processing.
