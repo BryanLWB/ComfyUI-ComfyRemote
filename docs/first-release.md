@@ -2,7 +2,7 @@
 
 ## Accepted scope
 
-- Private GitHub repository BryanLWB/ComfyUI-ComfyRemote; MIT; independent code.
+- Public plugin repository BryanLWB/ComfyUI-ComfyRemote; MIT; independent code.
 - One ComfyUI machine paired to one ComfyRemote instance using an expiring code.
 - Configurable service origin; Windows first; ComfyUI owns connector lifecycle.
 - Server retains accounts, review, persistent job queue and asset storage.
