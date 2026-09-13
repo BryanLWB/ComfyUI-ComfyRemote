@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.3
+
+- Export versioned tool-node identities, typed operations and inactive branches from an isolated graph.
+- Support independent top-level rgthree Fast Groups Bypasser and Muter controls, with explicit unsupported states for overlapping targets, subgraphs and linked restrictions.
+- Check imported execution semantics against native ComfyUI before sending. Compatible servers compile each task without an open ComfyUI browser.
+- Preserve ordinary imports and existing pairing, thumbnails and task recovery.
+
 ## 0.2.2
 
 - Theme-aware phone-and-stars sidebar icon.

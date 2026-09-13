@@ -3,8 +3,8 @@
 ComfyUI extension for pairing a machine with a ComfyRemote server, sending the
 current or selected saved workflow for field review, and executing remote jobs while ComfyUI runs.
 
-Version 0.2.2 refreshes the sidebar icon and Manager brand image, retaining the optional midpoint thumbnails introduced in 0.2.1.
-Current release checks are recorded in [the release checklist](docs/release-0.2.2.md).
+Version 0.2.3 exports declarative tool operations, including independent rgthree group Bypass and Mute controls. After import, remote generation needs the ComfyUI service and connector, but no open browser.
+Support boundaries and the extension contract are recorded in [tool controls](docs/workflow-controls.md).
 The plugin supports both self-hosted ComfyRemote and the hosted beta.
 Hosted registration is subject to the website's current capacity and account rules;
 the self-hosted server remains in private prerelease. Installing the plugin alone does not create a server.
@@ -17,19 +17,19 @@ on the server. No separate desktop Agent is required on the ComfyUI machine.
 
 1. Open ComfyUI Manager / Manage Extensions and search **ComfyRemote**.
 2. Confirm publisher **bryan711**. Open the version menu next to the version label,
-   select **0.2.2** when available, then click **Install**. The search card may initially say `nightly`.
+   select **0.2.3** when available, then click **Install**. The search card may initially say `nightly`.
 3. When installation completes and your queue is idle, apply changes to restart
    ComfyUI, then refresh the browser page to load the new frontend extension.
 4. Open the **ComfyRemote** sidebar.
 
 The **0.2.2** fixed-version path, green Manager image, phone-and-stars sidebar,
-restart and preserved pairing were verified on 2026-09-13 in isolated Windows ComfyUI. The Registry version still reports `Pending`;
+restart and preserved pairing were verified on 2026-09-13 in isolated Windows ComfyUI. That historical check does not establish installation of 0.2.3. The Registry now reports `Flagged` for 0.2.2;
 successful installation does not mean that review status has been cleared.
 Other Manager versions may present or restrict versions differently.
 See [the installation verification](docs/manager-installation.md).
 
 If the version menu is unavailable or installation fails, use the
-[v0.2.2 release](https://github.com/BryanLWB/ComfyUI-ComfyRemote/releases/tag/v0.2.2)
+[v0.2.3 release](https://github.com/BryanLWB/ComfyUI-ComfyRemote/releases/tag/v0.2.3)
 ZIP in your ComfyUI installation's `custom_nodes` folder and install
 `requirements.txt` using that installation's Python. Do not keep both a manual
 copy and a Manager copy of the plugin. Restart ComfyUI and refresh the browser.
