@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2
+
+- Theme-aware phone-and-stars sidebar icon.
+- Existing green ComfyRemote brand image in Registry/Manager metadata.
+- No execution, pairing or protocol changes.
+
 ## 0.2.0 - Public release candidate
 
 - One Windows plugin for self-hosted protocol 1 and hosted-ws-v2 services.
