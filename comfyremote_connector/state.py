@@ -43,6 +43,10 @@ class State:
                     PRIMARY KEY(filename,subfolder,type));
                 CREATE TABLE IF NOT EXISTS classes(name TEXT PRIMARY KEY);
                 CREATE TABLE IF NOT EXISTS definitions(class_type TEXT PRIMARY KEY, graph TEXT NOT NULL);
+                CREATE TABLE IF NOT EXISTS workflow_links(scope TEXT, source TEXT, workflow_id TEXT NOT NULL,
+                    PRIMARY KEY(scope,source));
+                CREATE TABLE IF NOT EXISTS workflow_sends(scope TEXT, request_id TEXT, payload TEXT NOT NULL,
+                    PRIMARY KEY(scope,request_id));
             """)
 
     @contextmanager
@@ -66,7 +70,7 @@ class State:
     def clear_pairing(self) -> None:
         (self.root / "pairing.dpapi").unlink(missing_ok=True)
         with self.db() as db:
-            for table in ("prompts", "outputs", "classes", "receipts", "definitions"):
+            for table in ("prompts", "outputs", "classes", "receipts", "definitions", "workflow_links", "workflow_sends"):
                 db.execute(f"DELETE FROM {table}")
             if db.execute("SELECT 1 FROM sqlite_master WHERE name='hosted_jobs'").fetchone():
                 db.execute("DELETE FROM hosted_jobs")

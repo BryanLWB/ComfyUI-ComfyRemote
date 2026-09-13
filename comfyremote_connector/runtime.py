@@ -68,6 +68,9 @@ class Runtime:
             "service": self.pairing["origin"] if self.pairing else "",
             "owner_email": self.pairing.get("owner_email") if self.pairing else None,
             "last_import": self.last_import,
+            "version": "0.2.4",
+            "capabilities": (self.pairing or {}).get("capabilities", []),
+            "duplicate_installations": getattr(self, "duplicate_installations", []),
             "thumbnail_warning": next(iter(self.hosted.thumbnail_failures.values()), ""),
         }
 
@@ -93,7 +96,7 @@ class Runtime:
                     "code": code.strip().upper(),
                     "name": name[:80],
                     "protocol": 1,
-                    "capabilities": ["hosted-jobs-v2", "multipart-v1", "video-thumbnail-v1", "workflow-controls-v1"],
+                    "capabilities": ["hosted-jobs-v2", "multipart-v1", "video-thumbnail-v1", "workflow-controls-v1", "workflow-update-v1"],
                 },
                 allow_redirects=False,
             ) as response:
@@ -130,7 +133,7 @@ class Runtime:
                 return
             async with self.mutation:
                 if self.pairing is pairing and (pairing.get("owner_email") != email or pairing.get("capabilities") != value.get("capabilities", [])):
-                    updated = {**pairing, "owner_email": email, "capabilities": [c for c in value.get("capabilities", []) if c in {"hosted-jobs-v2", "multipart-v1", "video-thumbnail-v1", "workflow-controls-v1"}]}
+                    updated = {**pairing, "owner_email": email, "capabilities": [c for c in value.get("capabilities", []) if c in {"hosted-jobs-v2", "multipart-v1", "video-thumbnail-v1", "workflow-controls-v1", "workflow-update-v1"}]}
                     self.state.save_pairing(updated)
                     self.pairing = updated
         except (aiohttp.ClientError, OSError, ValueError, TimeoutError):
@@ -159,7 +162,50 @@ class Runtime:
             result[name] = value[name]
         return result
 
-    async def send_workflow(self, body: dict) -> dict:
+    def workflow_scope(self, user: str) -> str:
+        pairing = self.pairing or {}
+        return hashlib.sha256(json.dumps([pairing.get("origin"), pairing.get("instance_id"), pairing.get("device_id"), user]).encode()).hexdigest()
+
+    async def workflow_targets(self, user: str, source: str) -> dict:
+        self.identity_checked_at = float("-inf")
+        await self.refresh_identity()
+        if "workflow-update-v1" not in (self.pairing or {}).get("capabilities", []):
+            return {"supported": False, "workflows": [], "linked_workflow_id": None}
+        async with await self.remote("GET", "/workflows") as response:
+            value = await response.json()
+            if response.status != 200:
+                raise ValueError("无法读取手机工作流，请稍后重试")
+        with self.state.db() as db:
+            row = db.execute("SELECT workflow_id FROM workflow_links WHERE scope=? AND source=?", (self.workflow_scope(user), source)).fetchone() if source else None
+            pending = [{"request_id": r[0], "name": json.loads(r[1])["payload"]["name"]} for r in db.execute("SELECT request_id,payload FROM workflow_sends WHERE scope=?", (self.workflow_scope(user),)) if json.loads(r[1])["source"] == source]
+        return {**value, "supported": True, "linked_workflow_id": row[0] if row else None, "pending": pending}
+
+    async def retry_workflow(self, request_id: str, user: str) -> dict:
+        scope = self.workflow_scope(user)
+        with self.state.db() as db:
+            row = db.execute("SELECT payload FROM workflow_sends WHERE scope=? AND request_id=?", (scope, request_id)).fetchone()
+        if not row:
+            raise ValueError("没有待重试发送，请重新预检")
+        saved = json.loads(row[0])
+        async with await self.remote("POST", "/workflows", json=saved["payload"]) as response:
+            value = await response.json()
+            if response.status not in {200, 201}:
+                if response.status < 500:
+                    with self.state.db() as db:
+                        db.execute("DELETE FROM workflow_sends WHERE scope=? AND request_id=?", (scope, request_id))
+                raise ValueError(value.get("error", value.get("detail", {})).get("message", "发送尚未确认，请稍后重试"))
+        self.finish_workflow(scope, saved["source"], request_id, value)
+        return value
+
+    def finish_workflow(self, scope: str, source: str, request_id: str | None, value: dict):
+        with self.state.db() as db:
+            if source and request_id:
+                db.execute("INSERT OR REPLACE INTO workflow_links VALUES(?,?,?)", (scope, source, value["workflow_id"]))
+            if request_id:
+                db.execute("DELETE FROM workflow_sends WHERE scope=? AND request_id=?", (scope, request_id))
+        self.last_import = value
+
+    async def send_workflow(self, body: dict, *, user: str = "default", preview: bool = False) -> dict:
         graph = body.get("prompt")
         name = body.get("name", "").strip()
         if not name or len(name) > 200 or not isinstance(graph, dict) or not graph:
@@ -188,19 +234,49 @@ class Runtime:
         self.state.add_classes(classes)
         self.state.remember_references(graph)
         payload = {"protocol": 1, "name": name, "prompt": graph, "object_info": info}
+        if body.get("intent") is not None:
+            self.identity_checked_at = float("-inf")
+            await self.refresh_identity()
+            if "workflow-update-v1" not in (self.pairing or {}).get("capabilities", []):
+                raise ValueError("当前服务尚不支持关联更新，请先升级服务")
+            for key in ("intent", "workflow_id", "expected_revision", "request_id"):
+                if key in body:
+                    payload[key] = body[key]
         if manifest:
             payload["control_manifest"] = manifest
         if len(json.dumps(payload).encode()) > 10 * 1024 * 1024:
             raise ValueError("Workflow exceeds the 10 MB import limit")
-        async with await self.remote("POST", "/workflows", json=payload) as response:
+        source = body.get("source", "")
+        if not isinstance(source, str) or len(source) > 1024 or (source and (source.startswith("/") or any(p in {"", ".", ".."} for p in source.split("/")) or "\\" in source or ":" in source)):
+            raise ValueError("工作流来源路径无效")
+        scope = self.workflow_scope(user)
+        request_id = payload.get("request_id")
+        if request_id and not preview:
+            if not isinstance(request_id, str) or not 1 <= len(request_id) <= 100:
+                raise ValueError("请求标识无效")
+            with self.state.db() as db:
+                stored = db.execute("SELECT payload FROM workflow_sends WHERE scope=? AND request_id=?", (scope, request_id)).fetchone()
+                if stored:
+                    saved = json.loads(stored[0])
+                    if saved != {"source": source, "payload": payload}:
+                        raise ValueError("此请求已有待确认结果，请先重试原发送或重新预检")
+                else:
+                    if db.execute("SELECT COUNT(*) FROM workflow_sends WHERE scope=?", (scope,)).fetchone()[0] >= 20:
+                        raise ValueError("待确认发送过多，请先处理上次发送结果")
+                    db.execute("INSERT INTO workflow_sends VALUES(?,?,?)", (scope, request_id, json.dumps({"source": source, "payload": payload})))
+        async with await self.remote("POST", "/workflows/preview" if preview else "/workflows", json=payload) as response:
             value = await response.json()
             if response.status not in {200, 201}:
+                if request_id and not preview and response.status < 500:
+                    with self.state.db() as db:
+                        db.execute("DELETE FROM workflow_sends WHERE scope=? AND request_id=?", (scope, request_id))
                 raise ValueError(
                     value.get("error", value.get("detail", {})).get(
                         "message", "Workflow import failed"
                     )
                 )
-        self.last_import = value
+        if not preview:
+            self.finish_workflow(scope, source, request_id, value)
         return value
 
     async def run(self):

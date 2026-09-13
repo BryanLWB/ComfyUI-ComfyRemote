@@ -40,6 +40,12 @@ def install():
         Path(folder_paths.get_user_directory()) / "comfyremote-connector",
         f"http://127.0.0.1:{args.port}",
     )
+    installations = []
+    for directory in folder_paths.get_folder_paths("custom_nodes"):
+        for child in Path(directory).iterdir():
+            if (child / "comfyremote_connector" / "integration.py").is_file():
+                installations.append(str(child))
+    runtime.duplicate_installations = installations if len(installations) > 1 else []
     server.app["comfyremote_connector"] = runtime
 
     async def startup(app):
@@ -56,9 +62,12 @@ def install():
             raise web.HTTPForbidden()
         action = request.match_info["action"]
         try:
-            if request.method == "GET" and action == "status":
+            user = server.user_manager.get_request_user_id(request)
+            if request.method == "GET" and action == "targets":
+                value = await runtime.workflow_targets(user, request.query.get("source", ""))
+            elif request.method == "GET" and action == "status":
                 value = runtime.status()
-            elif request.method == "POST" and action in {"pair", "unpair", "workflow"}:
+            elif request.method == "POST" and action in {"pair", "unpair", "workflow", "preview", "retry"}:
                 if request.content_length is None or request.content_length > 10 * 1024 * 1024:
                     raise web.HTTPRequestEntityTooLarge(
                         max_size=10 * 1024 * 1024, actual_size=request.content_length or 0
@@ -70,8 +79,10 @@ def install():
                 elif action == "unpair":
                     await runtime.unpair()
                     value = runtime.status()
+                elif action == "retry":
+                    value = await runtime.retry_workflow(body["request_id"], user)
                 else:
-                    value = await runtime.send_workflow(body)
+                    value = await runtime.send_workflow(body, user=user, preview=action == "preview")
             else:
                 raise web.HTTPNotFound()
         except (ValueError, KeyError, TypeError) as exc:
