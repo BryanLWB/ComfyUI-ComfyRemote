@@ -14,6 +14,7 @@ from urllib.parse import quote
 
 import aiohttp
 
+from .controls import compile_controls, validate_control_manifest
 from .hosted import Hosted
 from .protocol import CHUNK_BYTES, MAX_BODY_BYTES, service_origin, validate_command
 from .state import State
@@ -92,7 +93,7 @@ class Runtime:
                     "code": code.strip().upper(),
                     "name": name[:80],
                     "protocol": 1,
-                    "capabilities": ["hosted-jobs-v2", "multipart-v1", "video-thumbnail-v1"],
+                    "capabilities": ["hosted-jobs-v2", "multipart-v1", "video-thumbnail-v1", "workflow-controls-v1"],
                 },
                 allow_redirects=False,
             ) as response:
@@ -129,7 +130,7 @@ class Runtime:
                 return
             async with self.mutation:
                 if self.pairing is pairing and (pairing.get("owner_email") != email or pairing.get("capabilities") != value.get("capabilities", [])):
-                    updated = {**pairing, "owner_email": email, "capabilities": [c for c in value.get("capabilities", []) if c in {"hosted-jobs-v2", "multipart-v1", "video-thumbnail-v1"}]}
+                    updated = {**pairing, "owner_email": email, "capabilities": [c for c in value.get("capabilities", []) if c in {"hosted-jobs-v2", "multipart-v1", "video-thumbnail-v1", "workflow-controls-v1"}]}
                     self.state.save_pairing(updated)
                     self.pairing = updated
         except (aiohttp.ClientError, OSError, ValueError, TimeoutError):
@@ -164,12 +165,31 @@ class Runtime:
         if not name or len(name) > 200 or not isinstance(graph, dict) or not graph:
             raise ValueError("A named executable workflow is required")
         validate_workflow(graph)
+        manifest = validate_control_manifest(body.get("control_manifest"), graph)
+        if manifest:
+            # Refresh capability negotiation before an import, including existing pairings.
+            self.identity_checked_at = float("-inf")
+            await self.refresh_identity()
+            if "workflow-controls-v1" not in (self.pairing or {}).get("capabilities", []):
+                raise ValueError("当前服务尚不支持工具节点描述，请先更新服务后重新发送")
+            if manifest["modes"]:
+                original = body.get("original_prompt")
+                if not isinstance(original, dict):
+                    raise ValueError("Missing native conversion reference")
+                validate_workflow(original)
+                compiled = compile_controls(graph, manifest, [], {})
+                # Native graphToPrompt is the import-time oracle. A changed frontend
+                # must not silently expose a switch with different graph semantics.
+                if compiled != original:
+                    raise ValueError("工具节点转换与当前 ComfyUI 不一致，请保留固定状态；该版本需兼容适配")
         classes = sorted({node["class_type"] for node in graph.values()})
         info = minimal_info(graph, await self.node_info(classes))
         # This action is the boundary for exposing definitions of the selected graph.
         self.state.add_classes(classes)
         self.state.remember_references(graph)
         payload = {"protocol": 1, "name": name, "prompt": graph, "object_info": info}
+        if manifest:
+            payload["control_manifest"] = manifest
         if len(json.dumps(payload).encode()) > 10 * 1024 * 1024:
             raise ValueError("Workflow exceeds the 10 MB import limit")
         async with await self.remote("POST", "/workflows", json=payload) as response:

@@ -1,6 +1,6 @@
 import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js";
-import { savedWorkflows, workflowName, workflowPrompt } from "./workflows.js";
+import { savedWorkflows, workflowName, workflowPayload } from "./workflows.js";
 
 const style = document.createElement("link");
 style.rel = "stylesheet";
@@ -165,9 +165,10 @@ function mount(container) {
       result.hidden = true;
       feedback.hidden = false;
       feedback.textContent = "正在发送工作流…";
-      const prompt = await workflowPrompt(selectedPath);
+      const payload = await workflowPayload(selectedPath);
+      const prompt = payload.prompt;
       if (!prompt || !Object.keys(prompt).length) throw new Error("所选工作流没有可执行节点。");
-      const value = await request("workflow", { name: name.value.trim(), prompt });
+      const value = await request("workflow", { name: name.value.trim(), ...payload });
       const review = new URL(value.review_path, current.service);
       if (review.origin !== new URL(current.service).origin) throw new Error("服务返回了无效的审核地址。");
       result.href = review.href;
