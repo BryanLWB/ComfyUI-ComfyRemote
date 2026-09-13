@@ -1,3 +1,9 @@
+## 0.2.5
+
+- 将手机工作流列表刷新改为目标选择框右侧图标，支持加载状态和减少动态效果。
+- 刷新保留当前有效目标；目标失效时要求重新选择，避免意外切换。
+- 保留 0.2.4 的更新关联、草稿配置保留及幂等重试协议。
+
 ## 0.2.4
 
 - Link saved workflow sources to an explicit mobile target; update drafts while retaining compatible mobile configuration.

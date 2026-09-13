@@ -61,7 +61,13 @@ function mount(container) {
   const name = element("input", { required: true, maxLength: 200 });
   const destination = element("select", {required: true});
   destination.setAttribute("aria-label", "发送到手机");
-  const refreshTargets = element("button", {type: "button"}, "刷新手机工作流");
+  const refreshTargets = element("button", {type: "button", className: "cr-icon cr-target-refresh", title: "刷新手机工作流列表"});
+  refreshTargets.setAttribute("aria-label", "刷新手机工作流列表");
+  const refreshSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  for (const [key,value] of Object.entries({viewBox:"0 0 24 24",width:"18",height:"18",fill:"none",stroke:"currentColor","stroke-width":"1.8","stroke-linecap":"round","stroke-linejoin":"round","aria-hidden":"true"})) refreshSvg.setAttribute(key,value);
+  const refreshPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  refreshPath.setAttribute("d", "M20 7v5h-5 M4 17v-5h5 M6.1 6.1a8 8 0 0 1 13.4 4.4 M17.9 17.9A8 8 0 0 1 4.5 13.5");
+  refreshSvg.append(refreshPath);refreshTargets.append(refreshSvg);
   let targets = [], targetSource = null, targetGeneration = 0, pendingSend = null;
   const sourcePath = () => {
     if (selectedPath) return selectedPath;
@@ -69,21 +75,29 @@ function mount(container) {
     const relative = typeof path === "string" ? path.replace(/^workflows\//, "") : "";
     return paths.includes(relative) ? relative : "";
   };
-  async function loadTargets() {
+  async function loadTargets({preserve = false} = {}) {
     const generation = ++targetGeneration, source = sourcePath();
-    const data = await request(`targets?source=${encodeURIComponent(source)}`);
+    const previous = preserve && targetSource === source ? destination.value : null;
+    refreshTargets.setAttribute("aria-busy", "true");
+    refreshTargets.disabled = true;
+    let data;
+    try { data = await request(`targets?source=${encodeURIComponent(source)}`); }
+    finally { if(generation === targetGeneration) {refreshTargets.removeAttribute("aria-busy");refreshTargets.disabled = busy;} }
     if (generation !== targetGeneration) return;
     targets = data.workflows || [];
     destination.replaceChildren(element("option", {value: ""}, "请选择更新目标或新建"), element("option", {value: "__new"}, "新建工作流"));
     for (const item of targets) destination.append(element("option", {value: item.workflow_id}, `${item.name} · v${item.version}`));
-    if (targets.some(t => t.workflow_id === data.linked_workflow_id)) destination.value = data.linked_workflow_id;
-    if (data.linked_workflow_id && !targets.some(t => t.workflow_id === data.linked_workflow_id)) {
+    const desired = previous === null ? data.linked_workflow_id : previous;
+    if (desired === "__new" || targets.some(t => t.workflow_id === desired)) destination.value = desired;
+    else if (desired) {feedback.textContent = "所选目标已不可用，请重新选择手机工作流或另建。";feedback.hidden = false;}
+    if (previous === null && data.linked_workflow_id && !targets.some(t => t.workflow_id === data.linked_workflow_id)) {
       feedback.textContent = "原关联目标不可用，请重新选择手机工作流或另建。"; feedback.hidden = false;
     }
     destination.required = data.supported;
     destination.disabled = !data.supported;
     targetSource = source;
     pendingSend = data.pending?.length ? {_retry: data.pending[0].request_id} : null;
+    send.textContent = destination.value && destination.value !== "__new" ? "更新手机草稿" : "发送工作流";
     if (pendingSend) { feedback.textContent = "上次发送尚未确认，重试会恢复原请求，不重复创建。"; feedback.hidden = false; send.textContent = "重试上次发送"; }
     if (data.supported && !current.capabilities?.includes("workflow-update-v1")) current.capabilities = [...(current.capabilities || []), "workflow-update-v1"];
   }
@@ -92,9 +106,11 @@ function mount(container) {
   const feedback = element("p", { className: "cr-feedback", role: "status", hidden: true });
   workflowForm.append(chooser);
   field(workflowForm, "工作流名称", name);
-  field(workflowForm, "发送到手机", destination);
-  workflowForm.append(refreshTargets, send, feedback, result);
-  refreshTargets.addEventListener("click", () => void action(loadTargets));
+  const destinationRow = element("div", {className:"cr-destination-row"});
+  field(destinationRow, "发送到手机", destination);
+  destinationRow.append(refreshTargets);
+  workflowForm.append(destinationRow, send, feedback, result);
+  refreshTargets.addEventListener("click", () => {if(!busy) void action(() => loadTargets({preserve:true}));});
   destination.addEventListener("change", () => { pendingSend = null; send.textContent = destination.value && destination.value !== "__new" ? "更新手机草稿" : "发送工作流"; });
   const disconnect = element("button", { type: "button", className: "cr-disconnect", hidden: true, title: "解除配对" });
   disconnect.setAttribute("aria-label", "解除配对");
