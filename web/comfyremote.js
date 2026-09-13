@@ -66,7 +66,8 @@ function mount(container) {
   const sourcePath = () => {
     if (selectedPath) return selectedPath;
     const path = app.extensionManager?.workflow?.activeWorkflow?.path;
-    return typeof path === "string" && paths.includes(path) ? path : "";
+    const relative = typeof path === "string" ? path.replace(/^workflows\//, "") : "";
+    return paths.includes(relative) ? relative : "";
   };
   async function loadTargets() {
     const generation = ++targetGeneration, source = sourcePath();
