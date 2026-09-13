@@ -1,3 +1,9 @@
+# Latest installation verification — 2026-09-13
+
+Version **0.2.2**: both search names find bryan711, and the search preview loads the green ComfyRemote logo. Registry ZIP installation, Manager restart, the phone-and-stars sidebar and existing pairing were verified in the isolated Windows environment. Registry remains Pending. See [0.2.2 release evidence](release-0.2.2.md).
+
+The following records describe earlier versions and remain dated historical evidence.
+
 # Manager installation verification
 
 ## 0.2.1 — verified 2026-09-13
