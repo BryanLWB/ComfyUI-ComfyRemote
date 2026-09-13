@@ -21,10 +21,18 @@ class Hosted:
         self.runtime = runtime
         self.tasks: dict[str, asyncio.Task] = {}
         self.cancelled: set[str] = set()
+        self.thumbnail_failures: dict[str, str] = {}
         with runtime.state.db() as db:
             db.execute("""CREATE TABLE IF NOT EXISTS hosted_jobs(
                 id TEXT PRIMARY KEY, phase TEXT NOT NULL, prompt_id TEXT,
                 history TEXT, updated REAL NOT NULL)""")
+
+    def thumbnail_queue_init(self):
+        with self.runtime.state.db() as db:
+            db.execute("""CREATE TABLE IF NOT EXISTS thumbnail_queue(
+                origin TEXT NOT NULL, asset_id TEXT NOT NULL, source TEXT NOT NULL,
+                attempts INTEGER NOT NULL DEFAULT 0, next_try REAL NOT NULL DEFAULT 0,
+                PRIMARY KEY(origin,asset_id))""")
 
     def record(self, job_id):
         with self.runtime.state.db() as db:
@@ -106,6 +114,9 @@ class Hosted:
     async def heartbeat(self, socket):
         while True:
             await self.send_telemetry(socket)
+            key = "thumbnail-retry"
+            if key not in self.tasks or self.tasks[key].done():
+                self.tasks[key] = asyncio.create_task(self.retry_thumbnails())
             await asyncio.sleep(60)
 
     async def inspect_workflow(self, inspection_id):
@@ -402,6 +413,7 @@ class Hosted:
                 },
             )
             if asset["status"] == "ready":
+                await self.upload_thumbnail(asset["id"], temp, mime, source)
                 return
             progress = await self.api("GET", f"/assets/{asset['id']}")
             completed = {p["part"] for p in progress["parts"]}
@@ -412,5 +424,70 @@ class Hosted:
                         await self.api("PUT", f"/assets/{asset['id']}/parts/{part}", data=chunk)
                     part += 1
             await self.api("POST", f"/assets/{asset['id']}/complete", json={})
+            await self.upload_thumbnail(asset["id"], temp, mime, source)
         finally:
             temp.unlink(missing_ok=True)
+
+    async def upload_thumbnail(self, asset_id, source, mime, source_ref=None):
+        if not mime.startswith("video/") or "video-thumbnail-v1" not in (self.runtime.pairing or {}).get("capabilities", []):
+            return
+        pairing = self.runtime.pairing
+        origin = pairing["origin"]
+        try:
+            self.thumbnail_queue_init()
+            if source_ref:
+                with self.runtime.state.db() as db:
+                    db.execute("INSERT OR IGNORE INTO thumbnail_queue(origin,asset_id,source,next_try) VALUES(?,?,?,?)", (origin, asset_id, json.dumps(source_ref), time.time()+300))
+            from .video import midpoint_thumbnail
+
+            data, width, height, duration = await asyncio.to_thread(midpoint_thumbnail, source)
+            if self.runtime.pairing is not pairing:
+                raise ValueError("Pairing changed during thumbnail preparation")
+            query = urlencode({"width": width, "height": height, "duration_ms": duration})
+            await self.api("PUT", f"/assets/{asset_id}/thumbnail?{query}", data=data)
+            self.thumbnail_failures.pop(asset_id, None)
+            with self.runtime.state.db() as db:
+                db.execute("DELETE FROM thumbnail_queue WHERE origin=? AND asset_id=?", (origin, asset_id))
+        except asyncio.CancelledError:
+            raise
+        except Exception:  # noqa: BLE001 - optional derivative must not fail original transfer
+            # A derived preview must never change the original video's successful result.
+            self.thumbnail_failures[asset_id] = "视频已上传；中间帧缩略图暂未完成。"
+            try:
+                with self.runtime.state.db() as db:
+                    db.execute("UPDATE thumbnail_queue SET attempts=attempts+1,next_try=? WHERE origin=? AND asset_id=?", (time.time()+300, origin, asset_id))
+            except (sqlite3.Error, OSError):
+                pass  # A local derivative-journal failure must not fail the original result.
+
+    async def retry_thumbnails(self):
+        pairing = self.runtime.pairing
+        if not pairing or "video-thumbnail-v1" not in pairing.get("capabilities", []):
+            return
+        self.thumbnail_queue_init()
+        with self.runtime.state.db() as db:
+            rows = db.execute("SELECT asset_id,source FROM thumbnail_queue WHERE origin=? AND attempts BETWEEN 0 AND 4 AND next_try<? ORDER BY next_try LIMIT 2", (pairing["origin"], time.time())).fetchall()
+        for asset_id, serialized in rows:
+            if self.runtime.pairing is not pairing:
+                return
+            source = json.loads(serialized)
+            if not self.runtime.state.owns_output(source["filename"], source["subfolder"], source["type"]):
+                with self.runtime.state.db() as db:
+                    db.execute("UPDATE thumbnail_queue SET attempts=5 WHERE origin=? AND asset_id=?", (pairing["origin"], asset_id))
+                continue
+            temp = self.runtime.state.root / (asset_id + ".thumbnail-source")
+            try:
+                async with self.runtime.session.get(self.runtime.local_origin + "/view?" + urlencode(source), allow_redirects=False, timeout=aiohttp.ClientTimeout(total=120)) as response:
+                    response.raise_for_status()
+                    size = 0
+                    with temp.open("wb") as output:
+                        async for chunk in response.content.iter_chunked(1024 * 1024):
+                            size += len(chunk)
+                            if size > 500000000:
+                                raise ValueError("Video exceeds transfer limit")
+                            output.write(chunk)
+                await self.upload_thumbnail(asset_id, temp, "video/mp4")
+            except (aiohttp.ClientError, OSError, ValueError, TimeoutError):
+                with self.runtime.state.db() as db:
+                    db.execute("UPDATE thumbnail_queue SET attempts=attempts+1,next_try=? WHERE origin=? AND asset_id=?", (time.time()+300, pairing["origin"], asset_id))
+            finally:
+                temp.unlink(missing_ok=True)

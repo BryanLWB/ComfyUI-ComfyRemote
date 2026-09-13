@@ -3,8 +3,8 @@
 ComfyUI extension for pairing a machine with a ComfyRemote server, sending the
 current or selected saved workflow for field review, and executing remote jobs while ComfyUI runs.
 
-Version 0.2.0 is the first public release candidate. Registry publication and
-Manager availability are recorded in [the release checklist](docs/release-0.2.0.md).
+Version 0.2.1 adds optional video midpoint thumbnails for compatible hosted servers.
+Current release checks are recorded in [the release checklist](docs/release-0.2.1.md).
 The plugin supports both self-hosted ComfyRemote and the hosted beta.
 Hosted registration is subject to the website's current capacity and account rules;
 the self-hosted server remains in private prerelease. Installing the plugin alone does not create a server.
@@ -17,19 +17,19 @@ on the server. No separate desktop Agent is required on the ComfyUI machine.
 
 1. Open ComfyUI Manager / Manage Extensions and search **ComfyRemote**.
 2. Confirm publisher **bryan711**. Open the version menu next to the version label,
-   select **0.2.0**, then click **Install**. The search card may initially say `nightly`.
+   select **0.2.1** when available, then click **Install**. The search card may initially say `nightly`.
 3. When installation completes and your queue is idle, apply changes to restart
    ComfyUI, then refresh the browser page to load the new frontend extension.
 4. Open the **ComfyRemote** sidebar.
 
-This fixed-version path was verified on Windows with ComfyUI 0.34.5,
+The previous **0.2.0** fixed-version path was verified on Windows with ComfyUI 0.34.5,
 frontend 1.49.6 and Python 3.13.12. The Registry version still reports `Flagged`;
 successful installation does not mean that review status has been cleared.
 Other Manager versions may present or restrict versions differently.
 See [the installation verification](docs/manager-installation.md).
 
 If the version menu is unavailable or installation fails, use the
-[v0.2.0 release](https://github.com/BryanLWB/ComfyUI-ComfyRemote/releases/tag/v0.2.0)
+[v0.2.1 release](https://github.com/BryanLWB/ComfyUI-ComfyRemote/releases/tag/v0.2.1)
 ZIP in your ComfyUI installation's `custom_nodes` folder and install
 `requirements.txt` using that installation's Python. Do not keep both a manual
 copy and a Manager copy of the plugin. Restart ComfyUI and refresh the browser.
