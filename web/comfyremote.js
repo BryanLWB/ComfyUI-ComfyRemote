@@ -199,7 +199,7 @@ app.registerExtension({
   async setup() {
     app.extensionManager.registerSidebarTab({
       id: "comfyremote-connector",
-      icon: "pi pi-cloud-upload",
+      icon: "comfyremote-sidebar-icon",
       title: "ComfyRemote",
       tooltip: "ComfyRemote",
       type: "custom",
