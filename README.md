@@ -22,8 +22,8 @@ on the server. No separate desktop Agent is required on the ComfyUI machine.
    ComfyUI, then refresh the browser page to load the new frontend extension.
 4. Open the **ComfyRemote** sidebar.
 
-The previous **0.2.0** fixed-version path was verified on Windows with ComfyUI 0.34.5,
-frontend 1.49.6 and Python 3.13.12. The Registry version still reports `Flagged`;
+The **0.2.1** fixed-version path was verified on 2026-09-13 with Windows, ComfyUI 0.34.5,
+frontend 1.49.6 and Python 3.13.12. The Registry version still reports `Pending`;
 successful installation does not mean that review status has been cleared.
 Other Manager versions may present or restrict versions differently.
 See [the installation verification](docs/manager-installation.md).

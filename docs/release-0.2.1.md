@@ -3,6 +3,13 @@
 Prepared 2026-09-13. Publication and Manager installation are separate checks;
 this source document does not claim that Registry review has completed.
 
+Published as immutable tag `v0.2.1` at `dacff81660bc8eeeffe2018654e9184c30002061`.
+Windows CI passed on Python 3.12 and 3.13 (33 tests). Manager fixed-version install,
+restart, sidebar loading, pairing retention and real midpoint upload passed on
+2026-09-13; see [installation evidence](manager-installation.md).
+Registry status remained Pending. GitHub ZIP SHA-256:
+`9e04b34d0e9a6293e89a5846329930c7d24a7b66e0f651fb966bbc0c7be833ac`.
+
 - Compatible servers advertise `video-thumbnail-v1`. Older servers receive no new request.
 - PyAV decodes forward from a keyframe to the midpoint timestamp. Pillow writes a
   static WebP, longest edge 640 px, at most 256 KiB. Unknown duration or decoding

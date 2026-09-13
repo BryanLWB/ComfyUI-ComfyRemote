@@ -1,5 +1,26 @@
 # Manager installation verification
 
+## 0.2.1 — verified 2026-09-13
+
+In the same isolated Windows ComfyUI 0.34.5 / frontend 1.49.6 / Python 3.13.12
+environment, search found **ComfyRemote**, publisher **bryan711**. The version
+selector offered **0.2.1**; Install queued the Registry package. On restart,
+Manager downloaded `https://cdn.comfy.org/bryan711/comfyremote-connector/0.2.1/node.zip`,
+extracted it, and checked aiohttp, PyAV and Pillow dependencies. After startup and
+browser refresh the installed version was 0.2.1 and the sidebar connected with
+the pre-restart pairing retained.
+
+A workflow sent through that installed sidebar integration generated a real CPU
+video with red first frames and blue middle frames. The hosted result received
+an 86-byte blue midpoint WebP. No production canvas, account or pairing was used.
+
+Registry release id `5f6bfcc3-e921-43e3-aeb4-aa09f2cd8a98` still reported
+`NodeVersionStatusPending` after successful installation. Search/install behavior
+does not imply review clearance. The fixed release source is
+`dacff81660bc8eeeffe2018654e9184c30002061`; old 0.2.0 assets are unchanged.
+
+## Historical 0.2.0 check
+
 Verified on 2026-09-11 in an isolated Windows ComfyUI installation, with a separate
 user directory and local synthetic hosted account. Production pairing and canvas
 were not modified.
