@@ -1,3 +1,9 @@
+## 0.2.4
+
+- Link saved workflow sources to an explicit mobile target; update drafts while retaining compatible mobile configuration.
+- Preview binding changes, protect concurrent edits and retry interrupted sends without creating duplicate workflows.
+- Diagnose duplicate connector installations. Existing pairings and ordinary imports remain compatible.
+
 # Changelog
 
 ## 0.2.3
