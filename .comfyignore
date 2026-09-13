@@ -9,3 +9,7 @@ node_modules/
 artifacts/
 .pytest*/
 .venv/
+*.egg-info/
+__pycache__/
+*.pyc
+.ruff_cache/

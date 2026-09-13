@@ -128,9 +128,9 @@ function mount(container) {
     account.hidden = !value.paired;
     account.textContent = value.owner_email || "账号信息暂不可用";
     send.disabled = cannotSend();
-    if (value.error) { error.textContent = value.error; error.hidden = false; }
+    if (value.error || value.thumbnail_warning) { error.textContent = value.error || value.thumbnail_warning; error.hidden = false; }
     else if (connectionError && error.textContent === connectionError) { error.hidden = true; }
-    connectionError = value.error || "";
+    connectionError = value.error || value.thumbnail_warning || "";
     if (!value.paired) result.hidden = true;
     if (value.paired && value.last_import && !result.hidden) {
       const review = new URL(value.last_import.review_path, value.service);

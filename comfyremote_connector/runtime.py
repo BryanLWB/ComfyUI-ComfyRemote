@@ -67,6 +67,7 @@ class Runtime:
             "service": self.pairing["origin"] if self.pairing else "",
             "owner_email": self.pairing.get("owner_email") if self.pairing else None,
             "last_import": self.last_import,
+            "thumbnail_warning": next(iter(self.hosted.thumbnail_failures.values()), ""),
         }
 
     async def remote(self, method: str, path: str, **kwargs):
@@ -91,7 +92,7 @@ class Runtime:
                     "code": code.strip().upper(),
                     "name": name[:80],
                     "protocol": 1,
-                    "capabilities": ["hosted-jobs-v2", "multipart-v1"],
+                    "capabilities": ["hosted-jobs-v2", "multipart-v1", "video-thumbnail-v1"],
                 },
                 allow_redirects=False,
             ) as response:
@@ -127,8 +128,8 @@ class Runtime:
             ):
                 return
             async with self.mutation:
-                if self.pairing is pairing and pairing.get("owner_email") != email:
-                    updated = {**pairing, "owner_email": email}
+                if self.pairing is pairing and (pairing.get("owner_email") != email or pairing.get("capabilities") != value.get("capabilities", [])):
+                    updated = {**pairing, "owner_email": email, "capabilities": [c for c in value.get("capabilities", []) if c in {"hosted-jobs-v2", "multipart-v1", "video-thumbnail-v1"}]}
                     self.state.save_pairing(updated)
                     self.pairing = updated
         except (aiohttp.ClientError, OSError, ValueError, TimeoutError):
