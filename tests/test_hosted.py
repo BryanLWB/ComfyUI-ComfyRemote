@@ -2,7 +2,16 @@ from unittest.mock import AsyncMock
 
 import pytest
 
+from comfyremote_connector.hosted import serialize_uploaded_refs
 from comfyremote_connector.runtime import Runtime
+
+
+def test_multi_file_conversion_preserves_order_and_rejects_silent_truncation():
+    refs = [{"file": "main.png", "kind": "image"}, {"file": "aux.png", "kind": "image"}]
+    assert serialize_uploaded_refs(refs, "filename_list") == ["main.png", "aux.png"]
+    assert serialize_uploaded_refs(refs, "media_manifest_json") == '[{"file": "main.png", "kind": "image"}, {"file": "aux.png", "kind": "image"}]'
+    with pytest.raises(ValueError):
+        serialize_uploaded_refs(refs, "filename")
 
 
 @pytest.mark.asyncio
@@ -71,6 +80,7 @@ async def test_telemetry_contains_aggregates_without_prompt_contents(tmp_path):
     socket.send_json.assert_awaited_once_with(
         {
             "type": "ping",
+            "capabilities": ["multi-image-list-v1"],
             "telemetry": {
                 "gpu": {"name": "Test GPU", "vram_total": 16000, "vram_free": 12000},
                 "queue": {"comfy_running": 1, "comfy_pending": 2},
@@ -87,7 +97,7 @@ async def test_stats_failure_keeps_heartbeat_alive(tmp_path, failure):
     hosted.local = AsyncMock(side_effect=failure)
     socket = AsyncMock()
     await hosted.send_telemetry(socket)
-    socket.send_json.assert_awaited_once_with({"type": "ping", "telemetry": None})
+    socket.send_json.assert_awaited_once_with({"type": "ping", "telemetry": None, "capabilities": ["multi-image-list-v1"]})
 
 
 @pytest.mark.asyncio
@@ -140,3 +150,42 @@ async def test_cancel_before_submission_never_runs_prompt(tmp_path):
     await hosted.run_job("job")
     hosted.local.assert_not_called()
     assert hosted.record("job")["phase"] == "cancelled"
+
+
+@pytest.mark.asyncio
+async def test_resolve_inputs_transfers_full_list_in_order_and_cleans_temporary_files(tmp_path):
+    import copy
+    from unittest.mock import MagicMock
+
+    runtime = Runtime(tmp_path, "http://127.0.0.1:8189")
+    runtime.pairing = {"capabilities": ["multi-image-list-v1"]}
+    assets = [{"asset_id": "main", "name": "main.png", "mime": "image/png"},
+              {"asset_id": "aux", "name": "aux.png", "mime": "image/png"}]
+    graph = {"1": {"class_type": "ListLoader", "inputs": {"files": {"comfyremote_assets": assets, "serialization": "filename_list"}}}}
+    original = copy.deepcopy(graph)
+    async def chunks(_):
+        yield b"isolated image bytes"
+    response = MagicMock()
+    response.content.iter_chunked = chunks
+    context = AsyncMock()
+    context.__aenter__.return_value = response
+    runtime.remote = AsyncMock(return_value=context)
+    runtime.hosted.local = AsyncMock(side_effect=[{"subfolder":"ComfyRemote/hosted","name":"main.png"},{"subfolder":"ComfyRemote/hosted","name":"aux.png"}])
+    await runtime.hosted.resolve_inputs(graph)
+    assert graph["1"]["inputs"]["files"] == ["ComfyRemote/hosted/main.png","ComfyRemote/hosted/aux.png"]
+    assert [call.args[1] for call in runtime.remote.await_args_list] == ["/assets/main/content","/assets/aux/content"]
+    assert not list(tmp_path.rglob("*.hosted-input"))
+    assert original["1"]["inputs"]["files"]["comfyremote_assets"] == assets
+
+
+@pytest.mark.asyncio
+async def test_old_format_and_missing_capability_reject_before_transfer(tmp_path):
+    runtime = Runtime(tmp_path, "http://127.0.0.1:8189")
+    runtime.pairing = {"capabilities": []}
+    runtime.remote = AsyncMock()
+    assets = [{"asset_id": "main"}, {"asset_id": "aux"}]
+    for extra in ({}, {"serialization":"filename_list"}, {"serialization":"unknown"}):
+        graph = {"1":{"class_type":"List", "inputs":{"files":{"comfyremote_assets":assets,**extra}}}}
+        with pytest.raises(ValueError):
+            await runtime.hosted.resolve_inputs(graph)
+    runtime.remote.assert_not_called()
