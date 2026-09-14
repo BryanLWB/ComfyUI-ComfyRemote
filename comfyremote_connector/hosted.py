@@ -16,6 +16,18 @@ import aiohttp
 from .workflow import minimal_info, validate_workflow
 
 
+def serialize_uploaded_refs(refs: list[dict], serialization: str):
+    if not refs or serialization not in {"filename", "filename_list", "media_manifest_json"}:
+        raise ValueError("Unsupported or empty uploaded input list")
+    if serialization == "filename":
+        if len(refs) != 1:
+            raise ValueError("A single-file input cannot accept multiple uploads")
+        return refs[0]["file"]
+    if serialization == "filename_list":
+        return {"__value__": [ref["file"] for ref in refs]}
+    return json.dumps(refs, ensure_ascii=False)
+
+
 class Hosted:
     def __init__(self, runtime):
         self.runtime = runtime
@@ -169,7 +181,7 @@ class Hosted:
         except (aiohttp.ClientError, OSError, ValueError, TypeError, AttributeError, TimeoutError):
             pass
         # Only aggregate hardware/queue statistics leave the computer.
-        await socket.send_json({"type": "ping", "telemetry": snapshot})
+        await socket.send_json({"type": "ping", "telemetry": snapshot, "capabilities": ["multi-image-list-v1"]})
 
     async def close(self):
         for task in self.tasks.values():
@@ -197,8 +209,16 @@ class Hosted:
             for name, value in node["inputs"].items():
                 if not isinstance(value, dict) or "comfyremote_assets" not in value:
                     continue
+                serialization = value.get("serialization", "filename")
+                assets = value["comfyremote_assets"]
+                if serialization not in {"filename", "filename_list", "media_manifest_json"} or not assets:
+                    raise ValueError("Unsupported or empty uploaded input list")
+                if serialization == "filename" and len(assets) != 1:
+                    raise ValueError("A single-file input cannot accept multiple uploads")
+                if serialization == "filename_list" and "multi-image-list-v1" not in (self.runtime.pairing or {}).get("capabilities", []):
+                    raise ValueError("Update the connector to use image filename lists")
                 refs = []
-                for ref in value["comfyremote_assets"]:
+                for ref in assets:
                     asset_id = ref["asset_id"]
                     if asset_id not in uploaded:
                         temp = self.runtime.state.root / f"{asset_id}.hosted-input"
@@ -233,11 +253,7 @@ class Hosted:
                         finally:
                             temp.unlink(missing_ok=True)
                     refs.append({"file": uploaded[asset_id], "kind": ref["mime"].split("/")[0]})
-                node["inputs"][name] = (
-                    json.dumps(refs, ensure_ascii=False)
-                    if value.get("serialization") == "media_manifest_json"
-                    else refs[0]["file"]
-                )
+                node["inputs"][name] = serialize_uploaded_refs(refs, serialization)
 
     async def run_job(self, job_id, retry_upload=False):
         try:
