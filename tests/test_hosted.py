@@ -8,7 +8,7 @@ from comfyremote_connector.runtime import Runtime
 
 def test_multi_file_conversion_preserves_order_and_rejects_silent_truncation():
     refs = [{"file": "main.png", "kind": "image"}, {"file": "aux.png", "kind": "image"}]
-    assert serialize_uploaded_refs(refs, "filename_list") == ["main.png", "aux.png"]
+    assert serialize_uploaded_refs(refs, "filename_list") == {"__value__": ["main.png", "aux.png"]}
     assert serialize_uploaded_refs(refs, "media_manifest_json") == '[{"file": "main.png", "kind": "image"}, {"file": "aux.png", "kind": "image"}]'
     with pytest.raises(ValueError):
         serialize_uploaded_refs(refs, "filename")
@@ -172,7 +172,7 @@ async def test_resolve_inputs_transfers_full_list_in_order_and_cleans_temporary_
     runtime.remote = AsyncMock(return_value=context)
     runtime.hosted.local = AsyncMock(side_effect=[{"subfolder":"ComfyRemote/hosted","name":"main.png"},{"subfolder":"ComfyRemote/hosted","name":"aux.png"}])
     await runtime.hosted.resolve_inputs(graph)
-    assert graph["1"]["inputs"]["files"] == ["ComfyRemote/hosted/main.png","ComfyRemote/hosted/aux.png"]
+    assert graph["1"]["inputs"]["files"] == {"__value__": ["ComfyRemote/hosted/main.png","ComfyRemote/hosted/aux.png"]}
     assert [call.args[1] for call in runtime.remote.await_args_list] == ["/assets/main/content","/assets/aux/content"]
     assert not list(tmp_path.rglob("*.hosted-input"))
     assert original["1"]["inputs"]["files"]["comfyremote_assets"] == assets

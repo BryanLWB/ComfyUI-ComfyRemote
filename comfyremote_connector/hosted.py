@@ -24,7 +24,7 @@ def serialize_uploaded_refs(refs: list[dict], serialization: str):
             raise ValueError("A single-file input cannot accept multiple uploads")
         return refs[0]["file"]
     if serialization == "filename_list":
-        return [ref["file"] for ref in refs]
+        return {"__value__": [ref["file"] for ref in refs]}
     return json.dumps(refs, ensure_ascii=False)
 
 
