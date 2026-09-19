@@ -52,7 +52,7 @@ async def test_native_conversion_mismatch_prevents_upload(tmp_path, monkeypatch)
 
 def test_diagnostics_cannot_add_controls_or_foreign_nodes():
     from comfyremote_connector.control_diagnostics import validate_control_diagnostics
-    sample = json.loads((Path(__file__).parent / "fixtures/native-control-fixtures.json").read_text())[0]["payload"]
+    sample = json.loads((Path(__file__).parent / "fixtures/native-control-fixtures.json").read_text(encoding="utf-8"))[0]["payload"]
     manifest = sample["control_manifest"]
     issue = {"node_id": manifest["nodes"][0]["id"], "group_id": "g_9", "group_label": "输入", "code": "parent_group", "reason": "请使用小分组开关", "related_node_ids": []}
     assert validate_control_diagnostics([issue], manifest) == [issue]
