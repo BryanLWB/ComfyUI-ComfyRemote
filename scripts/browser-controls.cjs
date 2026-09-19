@@ -13,7 +13,7 @@ const assert = require('node:assert/strict');
       const {exportControlledGraph} = await import('/extensions/comfyremote-connector/controls.js');
       const before = JSON.stringify(app.rootGraph.serialize());
       const results = [];
-      for (const kind of ['Fast Groups Bypasser (rgthree)', 'Fast Groups Muter (rgthree)']) {
+      for (const annotation of [null, 'Note', 'MarkdownNote']) for (const kind of ['Fast Groups Bypasser (rgthree)', 'Fast Groups Muter (rgthree)']) {
         const graph = new LGraph();
         try {
           const source = LiteGraph.createNode('EmptyImage');
@@ -29,16 +29,21 @@ const assert = require('node:assert/strict');
           source.connect(0,resize,0); resize.connect(0,sink,0);
           const group = new LiteGraph.LGraphGroup('任意分组甲');
           group.pos=[350,-100]; group.size=[360,450]; graph.add(group);
+          const parent=new LiteGraph.LGraphGroup('任意分组父');parent.pos=[-100,-200];parent.size=[1400,1000];graph.add(parent);
+          const note=annotation ? LiteGraph.createNode(annotation) : null;
+          if(note){graph.add(note);note.pos=[360,150];note.size=[150,80];}
+          const reroute=LiteGraph.createNode('Reroute');graph.add(reroute);reroute.pos=[230,0];source.connect(0,reroute,0);reroute.connect(0,resize,0);
           tool.properties.matchTitle='任意分组';
           resize.mode = kind.includes('Bypass') ? 4 : 2;
           const payload = await exportControlledGraph(graph, g => app.graphToPrompt(g));
           const states = [];
           for (const enabled of [false,true]) {
             resize.mode=enabled ? 0 : kind.includes('Bypass') ? 4 : 2;
+            if(note) note.mode=resize.mode;
             states.push({enabled,prompt:(await app.graphToPrompt(graph)).output});
           }
           if (!payload.control_manifest.nodes[0].controls.length) throw Error(JSON.stringify(payload.control_manifest.nodes));
-          results.push({kind,payload,states,ids:{source:String(source.id),resize:String(resize.id),sink:String(sink.id)}});
+          results.push({kind,annotation,payload,states,ids:{source:String(source.id),resize:String(resize.id),sink:String(sink.id)}});
         } finally { graph.clear(); }
       }
       if (JSON.stringify(app.rootGraph.serialize()) !== before) throw Error('Original canvas changed');
@@ -46,9 +51,9 @@ const assert = require('node:assert/strict');
     });
     await fs.mkdir('artifacts',{recursive:true});
     await fs.writeFile('artifacts/native-control-fixtures.json',JSON.stringify(samples,null,2));
-    assert.equal(samples.length,2);
+    assert.equal(samples.length,6);
     const discovery = await page.evaluate(async () => {
-      const {discoverControls, exportControlledGraph} = await import('/extensions/comfyremote-connector/controls.js');
+      const {discoverControls, analyzeControls, exportControlledGraph} = await import('/extensions/comfyremote-connector/controls.js');
       const app=window.comfyAPI.app.app, before=JSON.stringify(app.rootGraph.serialize()), graph=new LGraph();
       const assert=(v,message)=>{if(!v)throw Error(message);};
       try {
@@ -69,7 +74,7 @@ const assert = require('node:assert/strict');
         tool.properties.toggleRestriction='max one';
         assert(discoverControls(graph).nodes[0].reason.includes('联动'),'Restriction not reported');tool.properties.toggleRestriction='default';
         const overlap=new LiteGraph.LGraphGroup('重叠');overlap.pos=[350,-100];overlap.size=[360,450];graph.add(overlap);
-        assert(discoverControls(graph).nodes[0].reason.includes('重叠'),'Overlap not reported');graph.remove(overlap);
+        assert(analyzeControls(graph).diagnostics.some(d=>d.code==='overlap'),'Overlap not reported');graph.remove(overlap);
         const virtual=LiteGraph.createNode('Fast Groups Muter (rgthree)');graph.add(virtual);virtual.type='UnsupportedTool';virtual.pos=[0,1000];
         assert(discoverControls(graph).nodes.some(n=>n.class_type==='UnsupportedTool'&&n.reason.includes('尚未支持')),'Unknown tool missing');
         graph.remove(virtual);

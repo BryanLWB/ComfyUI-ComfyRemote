@@ -14,6 +14,7 @@ from urllib.parse import quote
 
 import aiohttp
 
+from .control_diagnostics import validate_control_diagnostics
 from .controls import compile_controls, validate_control_manifest
 from .hosted import Hosted
 from .protocol import CHUNK_BYTES, MAX_BODY_BYTES, service_origin, validate_command
@@ -212,6 +213,7 @@ class Runtime:
             raise ValueError("A named executable workflow is required")
         validate_workflow(graph)
         manifest = validate_control_manifest(body.get("control_manifest"), graph)
+        diagnostics = validate_control_diagnostics(body.get("control_diagnostics"), manifest)
         if manifest:
             # Refresh capability negotiation before an import, including existing pairings.
             self.identity_checked_at = float("-inf")
@@ -244,6 +246,8 @@ class Runtime:
                     payload[key] = body[key]
         if manifest:
             payload["control_manifest"] = manifest
+            if diagnostics:
+                payload["control_diagnostics"] = diagnostics
         if len(json.dumps(payload).encode()) > 10 * 1024 * 1024:
             raise ValueError("Workflow exceeds the 10 MB import limit")
         source = body.get("source", "")
