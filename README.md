@@ -29,7 +29,7 @@ Other Manager versions may present or restrict versions differently.
 See [the installation verification](docs/manager-installation.md).
 
 If the version menu is unavailable or installation fails, use the
-[v0.2.3 release](https://github.com/BryanLWB/ComfyUI-ComfyRemote/releases/tag/v0.2.3)
+[v0.2.7 release](https://github.com/BryanLWB/ComfyUI-ComfyRemote/releases/tag/v0.2.7)
 ZIP in your ComfyUI installation's `custom_nodes` folder and install
 `requirements.txt` using that installation's Python. Do not keep both a manual
 copy and a Manager copy of the plugin. Restart ComfyUI and refresh the browser.

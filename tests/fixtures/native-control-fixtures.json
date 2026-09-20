@@ -1,6 +1,7 @@
 [
   {
     "kind": "Fast Groups Bypasser (rgthree)",
+    "annotation": null,
     "payload": {
       "prompt": {
         "1": {
@@ -140,6 +141,16 @@
           }
         }
       },
+      "control_diagnostics": [
+        {
+          "node_id": "4",
+          "group_id": "g_1",
+          "group_label": "任意分组父",
+          "code": "parent_group",
+          "reason": "包含其他匹配的小分组，请使用小分组开关",
+          "related_node_ids": []
+        }
+      ],
       "original_prompt": {
         "1": {
           "inputs": {
@@ -254,6 +265,7 @@
   },
   {
     "kind": "Fast Groups Muter (rgthree)",
+    "annotation": null,
     "payload": {
       "prompt": {
         "1": {
@@ -393,6 +405,1056 @@
           }
         }
       },
+      "control_diagnostics": [
+        {
+          "node_id": "4",
+          "group_id": "g_1",
+          "group_label": "任意分组父",
+          "code": "parent_group",
+          "reason": "包含其他匹配的小分组，请使用小分组开关",
+          "related_node_ids": []
+        }
+      ],
+      "original_prompt": {
+        "1": {
+          "inputs": {
+            "width": 64,
+            "height": 64,
+            "batch_size": 1,
+            "color": 0
+          },
+          "class_type": "EmptyImage",
+          "_meta": {
+            "title": "空图像"
+          }
+        },
+        "3": {
+          "inputs": {
+            "filename_prefix": "controls-acceptance"
+          },
+          "class_type": "SaveImage",
+          "_meta": {
+            "title": "保存图像"
+          }
+        }
+      }
+    },
+    "states": [
+      {
+        "enabled": false,
+        "prompt": {
+          "1": {
+            "inputs": {
+              "width": 64,
+              "height": 64,
+              "batch_size": 1,
+              "color": 0
+            },
+            "class_type": "EmptyImage",
+            "_meta": {
+              "title": "空图像"
+            }
+          },
+          "3": {
+            "inputs": {
+              "filename_prefix": "controls-acceptance"
+            },
+            "class_type": "SaveImage",
+            "_meta": {
+              "title": "保存图像"
+            }
+          }
+        }
+      },
+      {
+        "enabled": true,
+        "prompt": {
+          "1": {
+            "inputs": {
+              "width": 64,
+              "height": 64,
+              "batch_size": 1,
+              "color": 0
+            },
+            "class_type": "EmptyImage",
+            "_meta": {
+              "title": "空图像"
+            }
+          },
+          "2": {
+            "inputs": {
+              "upscale_method": "nearest-exact",
+              "width": 32,
+              "height": 32,
+              "crop": "disabled",
+              "image": [
+                "1",
+                0
+              ]
+            },
+            "class_type": "ImageScale",
+            "_meta": {
+              "title": "缩放图像"
+            }
+          },
+          "3": {
+            "inputs": {
+              "filename_prefix": "controls-acceptance",
+              "images": [
+                "2",
+                0
+              ]
+            },
+            "class_type": "SaveImage",
+            "_meta": {
+              "title": "保存图像"
+            }
+          }
+        }
+      }
+    ],
+    "ids": {
+      "source": "1",
+      "resize": "2",
+      "sink": "3"
+    }
+  },
+  {
+    "kind": "Fast Groups Bypasser (rgthree)",
+    "annotation": "Note",
+    "payload": {
+      "prompt": {
+        "1": {
+          "inputs": {
+            "width": 64,
+            "height": 64,
+            "batch_size": 1,
+            "color": 0
+          },
+          "class_type": "EmptyImage",
+          "_meta": {
+            "title": "空图像"
+          }
+        },
+        "2": {
+          "inputs": {
+            "upscale_method": "nearest-exact",
+            "width": 32,
+            "height": 32,
+            "crop": "disabled",
+            "image": [
+              "1",
+              0
+            ]
+          },
+          "class_type": "ImageScale",
+          "_meta": {
+            "title": "缩放图像"
+          }
+        },
+        "3": {
+          "inputs": {
+            "filename_prefix": "controls-acceptance",
+            "images": [
+              "2",
+              0
+            ]
+          },
+          "class_type": "SaveImage",
+          "_meta": {
+            "title": "保存图像"
+          }
+        }
+      },
+      "control_manifest": {
+        "version": 1,
+        "compiler": "comfyui-bypass-v1",
+        "nodes": [
+          {
+            "id": "4",
+            "class_type": "Fast Groups Bypasser (rgthree)",
+            "title": "Fast Groups Bypasser (rgthree)",
+            "controls": [
+              {
+                "id": "g_0",
+                "label": "任意分组甲",
+                "type": "boolean",
+                "mode_off": 4,
+                "members": [
+                  "2"
+                ],
+                "default": false
+              }
+            ]
+          }
+        ],
+        "modes": {
+          "1": 0,
+          "2": 4,
+          "3": 0
+        },
+        "ports": {
+          "1": {
+            "inputs": [
+              {
+                "name": "width",
+                "type": "INT"
+              },
+              {
+                "name": "height",
+                "type": "INT"
+              },
+              {
+                "name": "batch_size",
+                "type": "INT"
+              },
+              {
+                "name": "color",
+                "type": "INT"
+              }
+            ],
+            "outputs": [
+              "IMAGE"
+            ]
+          },
+          "2": {
+            "inputs": [
+              {
+                "name": "image",
+                "type": "IMAGE"
+              },
+              {
+                "name": "upscale_method",
+                "type": "COMBO"
+              },
+              {
+                "name": "width",
+                "type": "INT"
+              },
+              {
+                "name": "height",
+                "type": "INT"
+              },
+              {
+                "name": "crop",
+                "type": "COMBO"
+              }
+            ],
+            "outputs": [
+              "IMAGE"
+            ]
+          },
+          "3": {
+            "inputs": [
+              {
+                "name": "images",
+                "type": "IMAGE"
+              },
+              {
+                "name": "filename_prefix",
+                "type": "STRING"
+              }
+            ],
+            "outputs": [
+              "IMAGE"
+            ]
+          }
+        }
+      },
+      "control_diagnostics": [
+        {
+          "node_id": "4",
+          "group_id": "g_1",
+          "group_label": "任意分组父",
+          "code": "parent_group",
+          "reason": "包含其他匹配的小分组，请使用小分组开关",
+          "related_node_ids": []
+        }
+      ],
+      "original_prompt": {
+        "1": {
+          "inputs": {
+            "width": 64,
+            "height": 64,
+            "batch_size": 1,
+            "color": 0
+          },
+          "class_type": "EmptyImage",
+          "_meta": {
+            "title": "空图像"
+          }
+        },
+        "3": {
+          "inputs": {
+            "filename_prefix": "controls-acceptance",
+            "images": [
+              "1",
+              0
+            ]
+          },
+          "class_type": "SaveImage",
+          "_meta": {
+            "title": "保存图像"
+          }
+        }
+      }
+    },
+    "states": [
+      {
+        "enabled": false,
+        "prompt": {
+          "1": {
+            "inputs": {
+              "width": 64,
+              "height": 64,
+              "batch_size": 1,
+              "color": 0
+            },
+            "class_type": "EmptyImage",
+            "_meta": {
+              "title": "空图像"
+            }
+          },
+          "3": {
+            "inputs": {
+              "filename_prefix": "controls-acceptance",
+              "images": [
+                "1",
+                0
+              ]
+            },
+            "class_type": "SaveImage",
+            "_meta": {
+              "title": "保存图像"
+            }
+          }
+        }
+      },
+      {
+        "enabled": true,
+        "prompt": {
+          "1": {
+            "inputs": {
+              "width": 64,
+              "height": 64,
+              "batch_size": 1,
+              "color": 0
+            },
+            "class_type": "EmptyImage",
+            "_meta": {
+              "title": "空图像"
+            }
+          },
+          "2": {
+            "inputs": {
+              "upscale_method": "nearest-exact",
+              "width": 32,
+              "height": 32,
+              "crop": "disabled",
+              "image": [
+                "1",
+                0
+              ]
+            },
+            "class_type": "ImageScale",
+            "_meta": {
+              "title": "缩放图像"
+            }
+          },
+          "3": {
+            "inputs": {
+              "filename_prefix": "controls-acceptance",
+              "images": [
+                "2",
+                0
+              ]
+            },
+            "class_type": "SaveImage",
+            "_meta": {
+              "title": "保存图像"
+            }
+          }
+        }
+      }
+    ],
+    "ids": {
+      "source": "1",
+      "resize": "2",
+      "sink": "3"
+    }
+  },
+  {
+    "kind": "Fast Groups Muter (rgthree)",
+    "annotation": "Note",
+    "payload": {
+      "prompt": {
+        "1": {
+          "inputs": {
+            "width": 64,
+            "height": 64,
+            "batch_size": 1,
+            "color": 0
+          },
+          "class_type": "EmptyImage",
+          "_meta": {
+            "title": "空图像"
+          }
+        },
+        "2": {
+          "inputs": {
+            "upscale_method": "nearest-exact",
+            "width": 32,
+            "height": 32,
+            "crop": "disabled",
+            "image": [
+              "1",
+              0
+            ]
+          },
+          "class_type": "ImageScale",
+          "_meta": {
+            "title": "缩放图像"
+          }
+        },
+        "3": {
+          "inputs": {
+            "filename_prefix": "controls-acceptance",
+            "images": [
+              "2",
+              0
+            ]
+          },
+          "class_type": "SaveImage",
+          "_meta": {
+            "title": "保存图像"
+          }
+        }
+      },
+      "control_manifest": {
+        "version": 1,
+        "compiler": "comfyui-bypass-v1",
+        "nodes": [
+          {
+            "id": "4",
+            "class_type": "Fast Groups Muter (rgthree)",
+            "title": "Fast Groups Muter (rgthree)",
+            "controls": [
+              {
+                "id": "g_0",
+                "label": "任意分组甲",
+                "type": "boolean",
+                "mode_off": 2,
+                "members": [
+                  "2"
+                ],
+                "default": false
+              }
+            ]
+          }
+        ],
+        "modes": {
+          "1": 0,
+          "2": 2,
+          "3": 0
+        },
+        "ports": {
+          "1": {
+            "inputs": [
+              {
+                "name": "width",
+                "type": "INT"
+              },
+              {
+                "name": "height",
+                "type": "INT"
+              },
+              {
+                "name": "batch_size",
+                "type": "INT"
+              },
+              {
+                "name": "color",
+                "type": "INT"
+              }
+            ],
+            "outputs": [
+              "IMAGE"
+            ]
+          },
+          "2": {
+            "inputs": [
+              {
+                "name": "image",
+                "type": "IMAGE"
+              },
+              {
+                "name": "upscale_method",
+                "type": "COMBO"
+              },
+              {
+                "name": "width",
+                "type": "INT"
+              },
+              {
+                "name": "height",
+                "type": "INT"
+              },
+              {
+                "name": "crop",
+                "type": "COMBO"
+              }
+            ],
+            "outputs": [
+              "IMAGE"
+            ]
+          },
+          "3": {
+            "inputs": [
+              {
+                "name": "images",
+                "type": "IMAGE"
+              },
+              {
+                "name": "filename_prefix",
+                "type": "STRING"
+              }
+            ],
+            "outputs": [
+              "IMAGE"
+            ]
+          }
+        }
+      },
+      "control_diagnostics": [
+        {
+          "node_id": "4",
+          "group_id": "g_1",
+          "group_label": "任意分组父",
+          "code": "parent_group",
+          "reason": "包含其他匹配的小分组，请使用小分组开关",
+          "related_node_ids": []
+        }
+      ],
+      "original_prompt": {
+        "1": {
+          "inputs": {
+            "width": 64,
+            "height": 64,
+            "batch_size": 1,
+            "color": 0
+          },
+          "class_type": "EmptyImage",
+          "_meta": {
+            "title": "空图像"
+          }
+        },
+        "3": {
+          "inputs": {
+            "filename_prefix": "controls-acceptance"
+          },
+          "class_type": "SaveImage",
+          "_meta": {
+            "title": "保存图像"
+          }
+        }
+      }
+    },
+    "states": [
+      {
+        "enabled": false,
+        "prompt": {
+          "1": {
+            "inputs": {
+              "width": 64,
+              "height": 64,
+              "batch_size": 1,
+              "color": 0
+            },
+            "class_type": "EmptyImage",
+            "_meta": {
+              "title": "空图像"
+            }
+          },
+          "3": {
+            "inputs": {
+              "filename_prefix": "controls-acceptance"
+            },
+            "class_type": "SaveImage",
+            "_meta": {
+              "title": "保存图像"
+            }
+          }
+        }
+      },
+      {
+        "enabled": true,
+        "prompt": {
+          "1": {
+            "inputs": {
+              "width": 64,
+              "height": 64,
+              "batch_size": 1,
+              "color": 0
+            },
+            "class_type": "EmptyImage",
+            "_meta": {
+              "title": "空图像"
+            }
+          },
+          "2": {
+            "inputs": {
+              "upscale_method": "nearest-exact",
+              "width": 32,
+              "height": 32,
+              "crop": "disabled",
+              "image": [
+                "1",
+                0
+              ]
+            },
+            "class_type": "ImageScale",
+            "_meta": {
+              "title": "缩放图像"
+            }
+          },
+          "3": {
+            "inputs": {
+              "filename_prefix": "controls-acceptance",
+              "images": [
+                "2",
+                0
+              ]
+            },
+            "class_type": "SaveImage",
+            "_meta": {
+              "title": "保存图像"
+            }
+          }
+        }
+      }
+    ],
+    "ids": {
+      "source": "1",
+      "resize": "2",
+      "sink": "3"
+    }
+  },
+  {
+    "kind": "Fast Groups Bypasser (rgthree)",
+    "annotation": "MarkdownNote",
+    "payload": {
+      "prompt": {
+        "1": {
+          "inputs": {
+            "width": 64,
+            "height": 64,
+            "batch_size": 1,
+            "color": 0
+          },
+          "class_type": "EmptyImage",
+          "_meta": {
+            "title": "空图像"
+          }
+        },
+        "2": {
+          "inputs": {
+            "upscale_method": "nearest-exact",
+            "width": 32,
+            "height": 32,
+            "crop": "disabled",
+            "image": [
+              "1",
+              0
+            ]
+          },
+          "class_type": "ImageScale",
+          "_meta": {
+            "title": "缩放图像"
+          }
+        },
+        "3": {
+          "inputs": {
+            "filename_prefix": "controls-acceptance",
+            "images": [
+              "2",
+              0
+            ]
+          },
+          "class_type": "SaveImage",
+          "_meta": {
+            "title": "保存图像"
+          }
+        }
+      },
+      "control_manifest": {
+        "version": 1,
+        "compiler": "comfyui-bypass-v1",
+        "nodes": [
+          {
+            "id": "4",
+            "class_type": "Fast Groups Bypasser (rgthree)",
+            "title": "Fast Groups Bypasser (rgthree)",
+            "controls": [
+              {
+                "id": "g_0",
+                "label": "任意分组甲",
+                "type": "boolean",
+                "mode_off": 4,
+                "members": [
+                  "2"
+                ],
+                "default": false
+              }
+            ]
+          }
+        ],
+        "modes": {
+          "1": 0,
+          "2": 4,
+          "3": 0
+        },
+        "ports": {
+          "1": {
+            "inputs": [
+              {
+                "name": "width",
+                "type": "INT"
+              },
+              {
+                "name": "height",
+                "type": "INT"
+              },
+              {
+                "name": "batch_size",
+                "type": "INT"
+              },
+              {
+                "name": "color",
+                "type": "INT"
+              }
+            ],
+            "outputs": [
+              "IMAGE"
+            ]
+          },
+          "2": {
+            "inputs": [
+              {
+                "name": "image",
+                "type": "IMAGE"
+              },
+              {
+                "name": "upscale_method",
+                "type": "COMBO"
+              },
+              {
+                "name": "width",
+                "type": "INT"
+              },
+              {
+                "name": "height",
+                "type": "INT"
+              },
+              {
+                "name": "crop",
+                "type": "COMBO"
+              }
+            ],
+            "outputs": [
+              "IMAGE"
+            ]
+          },
+          "3": {
+            "inputs": [
+              {
+                "name": "images",
+                "type": "IMAGE"
+              },
+              {
+                "name": "filename_prefix",
+                "type": "STRING"
+              }
+            ],
+            "outputs": [
+              "IMAGE"
+            ]
+          }
+        }
+      },
+      "control_diagnostics": [
+        {
+          "node_id": "4",
+          "group_id": "g_1",
+          "group_label": "任意分组父",
+          "code": "parent_group",
+          "reason": "包含其他匹配的小分组，请使用小分组开关",
+          "related_node_ids": []
+        }
+      ],
+      "original_prompt": {
+        "1": {
+          "inputs": {
+            "width": 64,
+            "height": 64,
+            "batch_size": 1,
+            "color": 0
+          },
+          "class_type": "EmptyImage",
+          "_meta": {
+            "title": "空图像"
+          }
+        },
+        "3": {
+          "inputs": {
+            "filename_prefix": "controls-acceptance",
+            "images": [
+              "1",
+              0
+            ]
+          },
+          "class_type": "SaveImage",
+          "_meta": {
+            "title": "保存图像"
+          }
+        }
+      }
+    },
+    "states": [
+      {
+        "enabled": false,
+        "prompt": {
+          "1": {
+            "inputs": {
+              "width": 64,
+              "height": 64,
+              "batch_size": 1,
+              "color": 0
+            },
+            "class_type": "EmptyImage",
+            "_meta": {
+              "title": "空图像"
+            }
+          },
+          "3": {
+            "inputs": {
+              "filename_prefix": "controls-acceptance",
+              "images": [
+                "1",
+                0
+              ]
+            },
+            "class_type": "SaveImage",
+            "_meta": {
+              "title": "保存图像"
+            }
+          }
+        }
+      },
+      {
+        "enabled": true,
+        "prompt": {
+          "1": {
+            "inputs": {
+              "width": 64,
+              "height": 64,
+              "batch_size": 1,
+              "color": 0
+            },
+            "class_type": "EmptyImage",
+            "_meta": {
+              "title": "空图像"
+            }
+          },
+          "2": {
+            "inputs": {
+              "upscale_method": "nearest-exact",
+              "width": 32,
+              "height": 32,
+              "crop": "disabled",
+              "image": [
+                "1",
+                0
+              ]
+            },
+            "class_type": "ImageScale",
+            "_meta": {
+              "title": "缩放图像"
+            }
+          },
+          "3": {
+            "inputs": {
+              "filename_prefix": "controls-acceptance",
+              "images": [
+                "2",
+                0
+              ]
+            },
+            "class_type": "SaveImage",
+            "_meta": {
+              "title": "保存图像"
+            }
+          }
+        }
+      }
+    ],
+    "ids": {
+      "source": "1",
+      "resize": "2",
+      "sink": "3"
+    }
+  },
+  {
+    "kind": "Fast Groups Muter (rgthree)",
+    "annotation": "MarkdownNote",
+    "payload": {
+      "prompt": {
+        "1": {
+          "inputs": {
+            "width": 64,
+            "height": 64,
+            "batch_size": 1,
+            "color": 0
+          },
+          "class_type": "EmptyImage",
+          "_meta": {
+            "title": "空图像"
+          }
+        },
+        "2": {
+          "inputs": {
+            "upscale_method": "nearest-exact",
+            "width": 32,
+            "height": 32,
+            "crop": "disabled",
+            "image": [
+              "1",
+              0
+            ]
+          },
+          "class_type": "ImageScale",
+          "_meta": {
+            "title": "缩放图像"
+          }
+        },
+        "3": {
+          "inputs": {
+            "filename_prefix": "controls-acceptance",
+            "images": [
+              "2",
+              0
+            ]
+          },
+          "class_type": "SaveImage",
+          "_meta": {
+            "title": "保存图像"
+          }
+        }
+      },
+      "control_manifest": {
+        "version": 1,
+        "compiler": "comfyui-bypass-v1",
+        "nodes": [
+          {
+            "id": "4",
+            "class_type": "Fast Groups Muter (rgthree)",
+            "title": "Fast Groups Muter (rgthree)",
+            "controls": [
+              {
+                "id": "g_0",
+                "label": "任意分组甲",
+                "type": "boolean",
+                "mode_off": 2,
+                "members": [
+                  "2"
+                ],
+                "default": false
+              }
+            ]
+          }
+        ],
+        "modes": {
+          "1": 0,
+          "2": 2,
+          "3": 0
+        },
+        "ports": {
+          "1": {
+            "inputs": [
+              {
+                "name": "width",
+                "type": "INT"
+              },
+              {
+                "name": "height",
+                "type": "INT"
+              },
+              {
+                "name": "batch_size",
+                "type": "INT"
+              },
+              {
+                "name": "color",
+                "type": "INT"
+              }
+            ],
+            "outputs": [
+              "IMAGE"
+            ]
+          },
+          "2": {
+            "inputs": [
+              {
+                "name": "image",
+                "type": "IMAGE"
+              },
+              {
+                "name": "upscale_method",
+                "type": "COMBO"
+              },
+              {
+                "name": "width",
+                "type": "INT"
+              },
+              {
+                "name": "height",
+                "type": "INT"
+              },
+              {
+                "name": "crop",
+                "type": "COMBO"
+              }
+            ],
+            "outputs": [
+              "IMAGE"
+            ]
+          },
+          "3": {
+            "inputs": [
+              {
+                "name": "images",
+                "type": "IMAGE"
+              },
+              {
+                "name": "filename_prefix",
+                "type": "STRING"
+              }
+            ],
+            "outputs": [
+              "IMAGE"
+            ]
+          }
+        }
+      },
+      "control_diagnostics": [
+        {
+          "node_id": "4",
+          "group_id": "g_1",
+          "group_label": "任意分组父",
+          "code": "parent_group",
+          "reason": "包含其他匹配的小分组，请使用小分组开关",
+          "related_node_ids": []
+        }
+      ],
       "original_prompt": {
         "1": {
           "inputs": {
