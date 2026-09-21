@@ -17,6 +17,8 @@ import aiohttp
 from .control_diagnostics import validate_control_diagnostics
 from .controls import compile_controls, validate_control_manifest
 from .hosted import Hosted
+from .origin_migration import migrate as migrate_origin
+from .origin_migration import recover as recover_origin
 from .protocol import CHUNK_BYTES, MAX_BODY_BYTES, service_origin, validate_command
 from .state import State
 from .workflow import minimal_info, validate_workflow
@@ -30,6 +32,7 @@ class Runtime:
         self.local_origin = local_origin
         self.error = ""
         try:
+            recover_origin(self.state)
             self.pairing = self.state.load_pairing()
         except (OSError, ValueError):
             self.pairing = None
@@ -48,6 +51,16 @@ class Runtime:
         self.session = aiohttp.ClientSession(
             timeout=aiohttp.ClientTimeout(total=150), trust_env=False
         )
+        try:
+            if await migrate_origin(self.state, self.session):
+                self.pairing = self.state.load_pairing()
+        except (aiohttp.ClientError, OSError, ValueError, KeyError, TypeError, TimeoutError):
+            # Unavailable target retains the old working endpoint. An incomplete
+            # local commit must be recovered before dispatching work on either host.
+            if (self.state.root / "origin-migration.dpapi").exists():
+                await self.session.close()
+                raise
+            logger.warning("Service address migration unavailable; existing pairing retained")
         self.task = asyncio.create_task(self.run(), name="comfyremote-connector")
 
     async def close(self):
@@ -69,7 +82,7 @@ class Runtime:
             "service": self.pairing["origin"] if self.pairing else "",
             "owner_email": self.pairing.get("owner_email") if self.pairing else None,
             "last_import": self.last_import,
-            "version": "0.2.7",
+            "version": "0.2.8",
             "capabilities": (self.pairing or {}).get("capabilities", []),
             "duplicate_installations": getattr(self, "duplicate_installations", []),
             "thumbnail_warning": next(iter(self.hosted.thumbnail_failures.values()), ""),
@@ -165,7 +178,7 @@ class Runtime:
 
     def workflow_scope(self, user: str) -> str:
         pairing = self.pairing or {}
-        return hashlib.sha256(json.dumps([pairing.get("origin"), pairing.get("instance_id"), pairing.get("device_id"), user]).encode()).hexdigest()
+        return hashlib.sha256(json.dumps([pairing.get("workflow_scope_origin", pairing.get("origin")), pairing.get("instance_id"), pairing.get("device_id"), user]).encode()).hexdigest()
 
     async def workflow_targets(self, user: str, source: str) -> dict:
         self.identity_checked_at = float("-inf")
