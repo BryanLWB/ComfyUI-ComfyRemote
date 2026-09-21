@@ -3,7 +3,7 @@
 The hosted beta requires an invited account and a current Windows ComfyUI installation.
 The hosted site runs without the standalone ComfyRemote Agent.
 
-1. Sign in at https://comfy-app.dominohub.xyz with your invited email.
+1. Sign in at https://app.comfy-remote.com with your invited email.
 2. Download the fixed-version plugin ZIP from the GitHub Release. Registry/Manager availability is recorded in release notes.
 3. Extract the `ComfyUI-ComfyRemote` folder into ComfyUI's `custom_nodes` directory.
 4. With the ComfyUI Python environment, install `requirements.txt` and restart ComfyUI after the queue is idle.

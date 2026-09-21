@@ -1,5 +1,9 @@
 ## 0.2.7
 
+## 0.2.8
+
+- Use the new project domain and preserve pairing, workflow associations and thumbnail retry state during a verified hosted origin migration.
+
 - 分组控制优先开放独立小分组，父分组、重叠或不支持的成员不再隐藏其他可用开关。
 - 显示具体分组和节点的识别限制，保留原生执行图一致性校验。
 - 不支持的 Reroute / Primitive 分组操作仍保留固定状态；不改变真实画布、配对及已发布配置。
