@@ -63,11 +63,7 @@ function mount(container) {
   destination.setAttribute("aria-label", "发送到手机");
   const refreshTargets = element("button", {type: "button", className: "cr-icon cr-target-refresh", title: "刷新手机工作流列表"});
   refreshTargets.setAttribute("aria-label", "刷新手机工作流列表");
-  const refreshSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  for (const [key,value] of Object.entries({viewBox:"0 0 24 24",width:"18",height:"18",fill:"none",stroke:"currentColor","stroke-width":"1.8","stroke-linecap":"round","stroke-linejoin":"round","aria-hidden":"true"})) refreshSvg.setAttribute(key,value);
-  const refreshPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  refreshPath.setAttribute("d", "M20 7v5h-5 M4 17v-5h5 M6.1 6.1a8 8 0 0 1 13.4 4.4 M17.9 17.9A8 8 0 0 1 4.5 13.5");
-  refreshSvg.append(refreshPath);refreshTargets.append(refreshSvg);
+  refreshTargets.append(element("i", { className: "pi pi-refresh" }));
   let targets = [], targetSource = null, targetGeneration = 0, pendingSend = null;
   const sourcePath = () => {
     if (selectedPath) return selectedPath;

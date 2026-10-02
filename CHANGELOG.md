@@ -1,8 +1,13 @@
-## 0.2.7
+## 0.2.9
+
+- Replace the Registry/Manager promotional image with the current ComfyRemote logo.
+- Use the same refresh icon and button sizing for saved workflows and mobile targets.
 
 ## 0.2.8
 
 - Use the new project domain and preserve pairing, workflow associations and thumbnail retry state during a verified hosted origin migration.
+
+## 0.2.7
 
 - 分组控制优先开放独立小分组，父分组、重叠或不支持的成员不再隐藏其他可用开关。
 - 显示具体分组和节点的识别限制，保留原生执行图一致性校验。

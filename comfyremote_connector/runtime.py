@@ -82,7 +82,7 @@ class Runtime:
             "service": self.pairing["origin"] if self.pairing else "",
             "owner_email": self.pairing.get("owner_email") if self.pairing else None,
             "last_import": self.last_import,
-            "version": "0.2.8",
+            "version": "0.2.9",
             "capabilities": (self.pairing or {}).get("capabilities", []),
             "duplicate_installations": getattr(self, "duplicate_installations", []),
             "thumbnail_warning": next(iter(self.hosted.thumbnail_failures.values()), ""),
