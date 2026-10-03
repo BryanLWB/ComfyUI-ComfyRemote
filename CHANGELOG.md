@@ -1,3 +1,8 @@
+## 0.2.10
+
+- Show an available stable release beneath the sidebar heading, with manual update instructions and a release link. No automatic installation or restart.
+- Wrap the sidebar tab label as Comfy / Remote on two lines.
+
 ## 0.2.9
 
 - Replace the Registry/Manager promotional image with the current ComfyRemote logo.

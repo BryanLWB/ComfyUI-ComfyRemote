@@ -30,6 +30,22 @@ function mount(container) {
   const header = element("div", { className: "cr-header" });
   const heading = element("h2", {}, "ComfyRemote");
   const status = element("span", { className: "cr-status", role: "status" }, "连接中");
+  const updateNotice = element("details", { className: "cr-update", hidden: true });
+  const updateLabel = element("summary");
+  const updateHelp = element("p", {}, "在“管理扩展功能”中搜索 ComfyRemote，选择新版本并确认更新。任务结束后重启 ComfyUI，再刷新页面。");
+  const updateLink = element("a", { target: "_blank", rel: "noopener noreferrer" }, "查看版本说明与下载");
+  updateNotice.append(updateLabel, updateHelp, updateLink);
+  async function checkUpdates() {
+    try {
+      const { update } = await request("updates");
+      if (!root.isConnected) return;
+      updateNotice.hidden = !update;
+      if (update) {
+        updateLabel.textContent = `发现新版本 v${update.version} · 查看更新`;
+        updateLink.href = update.url;
+      }
+    } catch { /* Update checks must not interrupt pairing or workflow controls. */ }
+  }
   const account = element("p", { className: "cr-account", hidden: true });
   const connectedService = element("p", { className: "cr-service", hidden: true });
   const error = element("p", { className: "cr-error", role: "alert", hidden: true });
@@ -113,7 +129,7 @@ function mount(container) {
   disconnect.append(element("i", { className: "pi pi-sign-out" }));
   disconnect.append(element("span", {}, "解除配对"));
   header.append(heading, status, disconnect);
-  root.append(header, account, connectedService, error, pairForm, workflowForm);
+  root.append(header, updateNotice, account, connectedService, error, pairForm, workflowForm);
   container.replaceChildren(root);
   let current = {};
   let busy = false;
@@ -252,12 +268,17 @@ function mount(container) {
     if (window.confirm("解除与当前服务的配对？")) update(await request("unpair", {}));
   }));
   let mounted = false;
+  let nextUpdateCheck = 0;
   const refresh = async () => {
     if (!root.isConnected) {
       if (!mounted) window.setTimeout(refresh, 100);
       return;
     }
     mounted = true;
+    if (Date.now() >= nextUpdateCheck) {
+      nextUpdateCheck = Date.now() + 15 * 60 * 1000;
+      void checkUpdates();
+    }
     if (!busy) {
       try { update(await request("status")); } catch { status.textContent = "ComfyUI 连接中断"; }
     }
@@ -279,7 +300,7 @@ app.registerExtension({
     app.extensionManager.registerSidebarTab({
       id: "comfyremote-connector",
       icon: "comfyremote-sidebar-icon",
-      title: "ComfyRemote",
+      title: "Comfy\nRemote",
       tooltip: "ComfyRemote",
       type: "custom",
       render: mount,

@@ -1,5 +1,11 @@
 # Privacy and Limits
 
+While the ComfyRemote sidebar is open, the plugin checks the public GitHub latest
+stable release API. Successful checks are cached for six hours; failures retry no
+sooner than fifteen minutes. This request sends no pairing credentials, workflow
+data or device identifiers. Updates are installed only through the user's manual
+Manager or release-download workflow; the checker never installs or restarts.
+
 Pairing contacts the selected service and exchanges a single-use, fifteen-minute code
 for a device token. The Python extension stores the token with Windows DPAPI under
 ComfyUI's user directory, never in browser storage. Copying this state to another

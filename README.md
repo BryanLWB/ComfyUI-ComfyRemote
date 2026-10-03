@@ -3,7 +3,7 @@
 ComfyUI extension for pairing a machine with a ComfyRemote server, sending the
 current or selected saved workflow for field review, and executing remote jobs while ComfyUI runs.
 
-Version 0.2.9 exports declarative tool operations, including independent rgthree group Bypass and Mute controls. After import, remote generation needs the ComfyUI service and connector, but no open browser.
+The connector exports declarative tool operations, including independent rgthree group Bypass and Mute controls. After import, remote generation needs the ComfyUI service and connector, but no open browser.
 Support boundaries and the extension contract are recorded in [tool controls](docs/workflow-controls.md).
 The plugin supports both self-hosted ComfyRemote and the hosted beta.
 Hosted registration is subject to the website's current capacity and account rules;
@@ -17,7 +17,7 @@ on the server. No separate desktop Agent is required on the ComfyUI machine.
 
 1. Open ComfyUI Manager / Manage Extensions and search **ComfyRemote**.
 2. Confirm publisher **bryan711**. Open the version menu next to the version label,
-   select **0.2.9** when available, then click **Install**. The search card may initially say `nightly`.
+   select **0.2.10** when available, then click **Install**. The search card may initially say `nightly`.
 3. When installation completes and your queue is idle, apply changes to restart
    ComfyUI, then refresh the browser page to load the new frontend extension.
 4. Open the **ComfyRemote** sidebar.
@@ -29,12 +29,16 @@ Other Manager versions may present or restrict versions differently.
 See [the installation verification](docs/manager-installation.md).
 
 If the version menu is unavailable or installation fails, use the
-[v0.2.9 release](https://github.com/BryanLWB/ComfyUI-ComfyRemote/releases/tag/v0.2.9)
+[v0.2.10 release](https://github.com/BryanLWB/ComfyUI-ComfyRemote/releases/tag/v0.2.10)
 ZIP in your ComfyUI installation's `custom_nodes` folder and install
 `requirements.txt` using that installation's Python. Do not keep both a manual
 copy and a Manager copy of the plugin. Restart ComfyUI and refresh the browser.
 
 Use the ComfyRemote sidebar to enter your server address and a one-time pairing code.
+When a newer stable release is available, a label below the sidebar heading opens
+manual update instructions and the official release page. Confirm the update in
+Manager, then restart ComfyUI when idle and refresh the browser. No update is
+installed automatically.
 Generate a five-digit code in ComfyRemote using the owner account; it expires after
 15 minutes and works once. Older services may still issue longer codes.
 

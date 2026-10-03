@@ -14,6 +14,7 @@ from urllib.parse import quote
 
 import aiohttp
 
+from . import __version__
 from .control_diagnostics import validate_control_diagnostics
 from .controls import compile_controls, validate_control_manifest
 from .hosted import Hosted
@@ -82,7 +83,7 @@ class Runtime:
             "service": self.pairing["origin"] if self.pairing else "",
             "owner_email": self.pairing.get("owner_email") if self.pairing else None,
             "last_import": self.last_import,
-            "version": "0.2.9",
+            "version": __version__,
             "capabilities": (self.pairing or {}).get("capabilities", []),
             "duplicate_installations": getattr(self, "duplicate_installations", []),
             "thumbnail_warning": next(iter(self.hosted.thumbnail_failures.values()), ""),

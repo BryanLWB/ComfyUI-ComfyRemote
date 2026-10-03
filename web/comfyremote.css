@@ -5,6 +5,11 @@
 .cr-connector [hidden] { display: none !important; }
 .cr-status { font-size: 11px; white-space: nowrap; color: #b6b6b6; }
 .cr-status[data-online="true"] { color: #71cfaa; }
+.cr-update { margin: -2px 0 12px; font-size: 12px; }
+.cr-update summary { display: list-item; width: fit-content; max-width: 100%; padding: 3px 8px; border: 1px solid #488c71; border-radius: 5px; color: #85cbbd; cursor: pointer; overflow-wrap: anywhere; }
+.cr-update p { margin: 8px 0 4px; }
+.cr-update a { color: #85cbbd; }
+.side-bar-button-content:has(.comfyremote-sidebar-icon) > .side-bar-button-label { white-space: pre-line; word-break: normal; overflow-wrap: normal; }
 .cr-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
 .cr-chooser { min-width: 0; }
 .cr-form label { display: grid; gap: 7px; font-size: 13px; }

@@ -7,6 +7,7 @@ from urllib.parse import urlsplit
 from aiohttp import web
 
 from .runtime import Runtime
+from .updates import UpdateChecker
 
 
 def local_request(request: web.Request) -> bool:
@@ -47,6 +48,7 @@ def install():
                 installations.append(str(child))
     runtime.duplicate_installations = installations if len(installations) > 1 else []
     server.app["comfyremote_connector"] = runtime
+    updates = UpdateChecker()
 
     async def startup(app):
         await runtime.start()
@@ -67,6 +69,8 @@ def install():
                 value = await runtime.workflow_targets(user, request.query.get("source", ""))
             elif request.method == "GET" and action == "status":
                 value = runtime.status()
+            elif request.method == "GET" and action == "updates":
+                value = await updates.check()
             elif request.method == "POST" and action in {"pair", "unpair", "workflow", "preview", "retry"}:
                 if request.content_length is None or request.content_length > 10 * 1024 * 1024:
                     raise web.HTTPRequestEntityTooLarge(
