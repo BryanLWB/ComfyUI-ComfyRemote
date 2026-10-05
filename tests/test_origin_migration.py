@@ -47,7 +47,7 @@ def runtime(tmp_path):
     with r.state.db() as db:
         db.execute("INSERT INTO workflow_links VALUES(?,?,?)", (r.workflow_scope("alice"), "saved.json", "workflow"))
         db.execute("INSERT INTO workflow_sends VALUES(?,?,?)", (r.workflow_scope("bob"), "request", json.dumps({"payload": {"request_id": "request"}})))
-        db.execute("INSERT INTO thumbnail_queue VALUES(?,?,?,?,?)", (OLD, "asset", "{}", 2, 12))
+        db.execute("INSERT INTO thumbnail_queue(origin,asset_id,source,attempts,next_try) VALUES(?,?,?,?,?)", (OLD, "asset", "{}", 2, 12))
     return r
 
 
@@ -98,7 +98,7 @@ async def test_interrupted_pairing_write_resumes_without_losing_queue(runtime, m
 @pytest.mark.asyncio
 async def test_collision_never_overwrites_existing_thumbnail_retry(runtime):
     with runtime.state.db() as db:
-        db.execute("INSERT INTO thumbnail_queue VALUES(?,?,?,?,?)", (NEW, "asset", "different", 0, 0))
+        db.execute("INSERT INTO thumbnail_queue(origin,asset_id,source,attempts,next_try) VALUES(?,?,?,?,?)", (NEW, "asset", "different", 0, 0))
     with pytest.raises(ValueError, match="conflict"):
         await migrate(runtime.state, Session())
     assert runtime.state.load_pairing()["origin"] == OLD

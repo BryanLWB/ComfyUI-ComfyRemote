@@ -1,3 +1,8 @@
+## 0.2.11
+
+- Upload a static, at most 640-pixel WebP preview alongside hosted output images when the service supports it. Originals and downloads retain their full quality.
+- Retry image previews separately from successful original transfers, preserving existing video retry journals. Older services receive no image-preview uploads.
+
 ## 0.2.10
 
 - Show an available stable release beneath the sidebar heading, with manual update instructions and a release link. No automatic installation or restart.

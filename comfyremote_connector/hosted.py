@@ -45,6 +45,8 @@ class Hosted:
                 origin TEXT NOT NULL, asset_id TEXT NOT NULL, source TEXT NOT NULL,
                 attempts INTEGER NOT NULL DEFAULT 0, next_try REAL NOT NULL DEFAULT 0,
                 PRIMARY KEY(origin,asset_id))""")
+            if "mime" not in {row[1] for row in db.execute("PRAGMA table_info(thumbnail_queue)")}:
+                db.execute("ALTER TABLE thumbnail_queue ADD COLUMN mime TEXT NOT NULL DEFAULT 'video/mp4'")
 
     def record(self, job_id):
         with self.runtime.state.db() as db:
@@ -445,7 +447,8 @@ class Hosted:
             temp.unlink(missing_ok=True)
 
     async def upload_thumbnail(self, asset_id, source, mime, source_ref=None):
-        if not mime.startswith("video/") or "video-thumbnail-v1" not in (self.runtime.pairing or {}).get("capabilities", []):
+        capability = "image-thumbnail-v1" if mime.startswith("image/") else "video-thumbnail-v1"
+        if not mime.startswith(("image/", "video/")) or capability not in (self.runtime.pairing or {}).get("capabilities", []):
             return
         pairing = self.runtime.pairing
         origin = pairing["origin"]
@@ -453,13 +456,18 @@ class Hosted:
             self.thumbnail_queue_init()
             if source_ref:
                 with self.runtime.state.db() as db:
-                    db.execute("INSERT OR IGNORE INTO thumbnail_queue(origin,asset_id,source,next_try) VALUES(?,?,?,?)", (origin, asset_id, json.dumps(source_ref), time.time()+300))
-            from .video import midpoint_thumbnail
-
-            data, width, height, duration = await asyncio.to_thread(midpoint_thumbnail, source)
+                    db.execute("INSERT OR IGNORE INTO thumbnail_queue(origin,asset_id,source,next_try,mime) VALUES(?,?,?,?,?)", (origin, asset_id, json.dumps(source_ref), time.time()+300, mime))
+            if mime.startswith("image/"):
+                from .image import image_thumbnail
+                data, width, height = await asyncio.to_thread(image_thumbnail, source)
+                metadata = {"width": width, "height": height}
+            else:
+                from .video import midpoint_thumbnail
+                data, width, height, duration = await asyncio.to_thread(midpoint_thumbnail, source)
+                metadata = {"width": width, "height": height, "duration_ms": duration}
             if self.runtime.pairing is not pairing:
                 raise ValueError("Pairing changed during thumbnail preparation")
-            query = urlencode({"width": width, "height": height, "duration_ms": duration})
+            query = urlencode(metadata)
             await self.api("PUT", f"/assets/{asset_id}/thumbnail?{query}", data=data)
             self.thumbnail_failures.pop(asset_id, None)
             with self.runtime.state.db() as db:
@@ -468,7 +476,7 @@ class Hosted:
             raise
         except Exception:  # noqa: BLE001 - optional derivative must not fail original transfer
             # A derived preview must never change the original video's successful result.
-            self.thumbnail_failures[asset_id] = "视频已上传；中间帧缩略图暂未完成。"
+            self.thumbnail_failures[asset_id] = "原图已上传；图片缩略图暂未完成。" if mime.startswith("image/") else "视频已上传；中间帧缩略图暂未完成。"
             try:
                 with self.runtime.state.db() as db:
                     db.execute("UPDATE thumbnail_queue SET attempts=attempts+1,next_try=? WHERE origin=? AND asset_id=?", (time.time()+300, origin, asset_id))
@@ -477,12 +485,12 @@ class Hosted:
 
     async def retry_thumbnails(self):
         pairing = self.runtime.pairing
-        if not pairing or "video-thumbnail-v1" not in pairing.get("capabilities", []):
+        if not pairing or not {"video-thumbnail-v1", "image-thumbnail-v1"}.intersection(pairing.get("capabilities", [])):
             return
         self.thumbnail_queue_init()
         with self.runtime.state.db() as db:
-            rows = db.execute("SELECT asset_id,source FROM thumbnail_queue WHERE origin=? AND attempts BETWEEN 0 AND 4 AND next_try<? ORDER BY next_try LIMIT 2", (pairing["origin"], time.time())).fetchall()
-        for asset_id, serialized in rows:
+            rows = db.execute("SELECT asset_id,source,mime FROM thumbnail_queue WHERE origin=? AND attempts BETWEEN 0 AND 4 AND next_try<? AND ((mime LIKE 'image/%' AND ?=1) OR (mime LIKE 'video/%' AND ?=1)) ORDER BY next_try LIMIT 2", (pairing["origin"], time.time(), int("image-thumbnail-v1" in pairing.get("capabilities", [])), int("video-thumbnail-v1" in pairing.get("capabilities", [])))).fetchall()
+        for asset_id, serialized, mime in rows:
             if self.runtime.pairing is not pairing:
                 return
             source = json.loads(serialized)
@@ -499,9 +507,9 @@ class Hosted:
                         async for chunk in response.content.iter_chunked(1024 * 1024):
                             size += len(chunk)
                             if size > 500000000:
-                                raise ValueError("Video exceeds transfer limit")
+                                raise ValueError("Media exceeds transfer limit")
                             output.write(chunk)
-                await self.upload_thumbnail(asset_id, temp, "video/mp4")
+                await self.upload_thumbnail(asset_id, temp, mime)
             except (aiohttp.ClientError, OSError, ValueError, TimeoutError):
                 with self.runtime.state.db() as db:
                     db.execute("UPDATE thumbnail_queue SET attempts=attempts+1,next_try=? WHERE origin=? AND asset_id=?", (time.time()+300, pairing["origin"], asset_id))
