@@ -16,23 +16,32 @@ on the server. No separate desktop Agent is required on the ComfyUI machine.
 ## Install
 
 1. Open ComfyUI Manager / Manage Extensions and search **ComfyRemote**.
-2. Confirm publisher **bryan711**. Open the version menu next to the version label,
-   select **0.2.10** when available, then click **Install**. The search card may initially say `nightly`.
+2. Confirm publisher **bryan711** (Registry ID **comfyremote-connector**). Open the
+   version menu next to the version label, select **0.2.11** when available, then
+   click **Install**. The search card may initially say `nightly`.
 3. When installation completes and your queue is idle, apply changes to restart
    ComfyUI, then refresh the browser page to load the new frontend extension.
 4. Open the **ComfyRemote** sidebar.
 
-The **0.2.2** fixed-version path, green Manager image, phone-and-stars sidebar,
-restart and preserved pairing were verified on 2026-09-13 in isolated Windows ComfyUI. That historical check does not establish installation of 0.2.3. The Registry now reports `Flagged` for 0.2.2;
-successful installation does not mean that review status has been cleared.
-Other Manager versions may present or restrict versions differently.
-See [the installation verification](docs/manager-installation.md).
+GitHub publication and Registry review are separate. A successful publishing
+workflow does not establish Registry approval or Manager availability. On
+2026-10-06, the Registry's Active/Pending version list offered **0.2.2** and
+**0.2.0**; versions **0.2.3–0.2.10** were `Flagged`. Manager may therefore offer an
+older version until Registry review clears a newer release. Check the current
+[Registry listing](https://registry.comfy.org/nodes/comfyremote-connector).
+The isolated Manager installation checks in
+[the installation verification](docs/manager-installation.md) are dated historical
+evidence, not a verification of the 0.2.11 Manager installation path.
 
 If the version menu is unavailable or installation fails, use the
-[v0.2.10 release](https://github.com/BryanLWB/ComfyUI-ComfyRemote/releases/tag/v0.2.10)
-ZIP in your ComfyUI installation's `custom_nodes` folder and install
+[v0.2.11 release](https://github.com/BryanLWB/ComfyUI-ComfyRemote/releases/tag/v0.2.11)
+asset **ComfyUI-ComfyRemote-0.2.11.zip** and verify it with **SHA256SUMS.txt**. Back
+up the existing connector folder outside `custom_nodes`, then replace that one
+installation with the ZIP's `ComfyUI-ComfyRemote` folder and install
 `requirements.txt` using that installation's Python. Do not keep both a manual
-copy and a Manager copy of the plugin. Restart ComfyUI and refresh the browser.
+copy and a Manager copy of the plugin. Restart ComfyUI when the queue is idle and
+refresh the browser. Existing pairing is retained; upgrading alone does not
+create previews for older output images.
 
 Use the ComfyRemote sidebar to enter your server address and a one-time pairing code.
 When a newer stable release is available, a label below the sidebar heading opens
